@@ -20,7 +20,7 @@ program example_main;
 
 {$mode objfpc}{$H+}
 
-// Условная компиляция отладочного вывода
+// Conditional compilation for debug output
 {$IFDEF DEBUG}
   {$DEFINE ENABLE_DEBUG_OUTPUT}
 {$ENDIF}
@@ -30,7 +30,7 @@ uses
 
 
 type
-  { TExampleApp - Демонстрационное приложение }
+  { TExampleApp - Demo application }
   TExampleApp = class(TGTKSimpleWindow)
   private
     FClickCount: Integer;
@@ -42,13 +42,13 @@ type
     constructor Create;
     procedure SetupWindow; override;
     
-    // Обработчики событий
+    // Event handlers
     procedure OnButtonClick(widget: PGtkWidget; data: Pointer);
     procedure OnGreetClick(widget: PGtkWidget; data: Pointer);
     procedure OnClearClick(widget: PGtkWidget; data: Pointer);
   end;
   
-  { TAdwaitaExampleApp - Современное приложение с LibAdwaita }
+  { TAdwaitaExampleApp - Modern application with LibAdwaita }
   TAdwaitaExampleApp = class
   private
     FApp: PAdwApplication;
@@ -68,7 +68,7 @@ type
     procedure SetupWindow;
     function Run: Integer;
     
-    // Обработчики событий
+    // Event handlers
     procedure OnActivate(app: PAdwApplication; data: Pointer);
     procedure OnButtonClick(widget: PGtkWidget; data: Pointer);
     procedure OnGreetClick(widget: PGtkWidget; data: Pointer);
@@ -76,7 +76,7 @@ type
     procedure OnToastClick(widget: PGtkWidget; data: Pointer);
   end;
 
-// Глобальные callback-функции для обработки событий
+// Global callback functions for event handling
 procedure button_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
 var
   app: TExampleApp;
@@ -84,24 +84,24 @@ begin
   try
     if (data = nil) or (widget = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: button_click_callback вызван с nil параметрами');
+      WriteLn('WARNING: button_click_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       app := TExampleApp(data);
       if app <> nil then
         app.OnButtonClick(widget, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в button_click_callback');
+        WriteLn('ERROR: Invalid application pointer in button_click_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в button_click_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in button_click_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в button_click_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in button_click_callback: ', E.Message);
   end;
 end;
 
@@ -112,24 +112,24 @@ begin
   try
     if (data = nil) or (widget = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: greet_click_callback вызван с nil параметрами');
+      WriteLn('WARNING: greet_click_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       app := TExampleApp(data);
       if app <> nil then
         app.OnGreetClick(widget, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в greet_click_callback');
+        WriteLn('ERROR: Invalid application pointer in greet_click_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в greet_click_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in greet_click_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в greet_click_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in greet_click_callback: ', E.Message);
   end;
 end;
 
@@ -140,24 +140,24 @@ begin
   try
     if (data = nil) or (widget = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: clear_click_callback вызван с nil параметрами');
+      WriteLn('WARNING: clear_click_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       app := TExampleApp(data);
       if app <> nil then
         app.OnClearClick(widget, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в clear_click_callback');
+        WriteLn('ERROR: Invalid application pointer in clear_click_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в clear_click_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in clear_click_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в clear_click_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in clear_click_callback: ', E.Message);
   end;
 end;
 
@@ -169,24 +169,24 @@ begin
   try
     if (data = nil) or (app = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: adw_app_activate_callback вызван с nil параметрами');
+      WriteLn('WARNING: adw_app_activate_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       adw_app := TAdwaitaExampleApp(data);
       if adw_app <> nil then
         adw_app.OnActivate(app, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в adw_app_activate_callback');
+        WriteLn('ERROR: Invalid application pointer in adw_app_activate_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в adw_app_activate_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in adw_app_activate_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в adw_app_activate_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in adw_app_activate_callback: ', E.Message);
   end;
 end;
 
@@ -197,24 +197,24 @@ begin
   try
     if (data = nil) or (widget = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: adw_button_click_callback вызван с nil параметрами');
+      WriteLn('WARNING: adw_button_click_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       app := TAdwaitaExampleApp(data);
       if app <> nil then
         app.OnButtonClick(widget, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в adw_button_click_callback');
+        WriteLn('ERROR: Invalid application pointer in adw_button_click_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в adw_button_click_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in adw_button_click_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в adw_button_click_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in adw_button_click_callback: ', E.Message);
   end;
 end;
 
@@ -225,24 +225,24 @@ begin
   try
     if (data = nil) or (widget = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: adw_greet_click_callback вызван с nil параметрами');
+      WriteLn('WARNING: adw_greet_click_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       app := TAdwaitaExampleApp(data);
       if app <> nil then
         app.OnGreetClick(widget, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в adw_greet_click_callback');
+        WriteLn('ERROR: Invalid application pointer in adw_greet_click_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в adw_greet_click_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in adw_greet_click_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в adw_greet_click_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in adw_greet_click_callback: ', E.Message);
   end;
 end;
 
@@ -253,24 +253,24 @@ begin
   try
     if (data = nil) or (widget = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: adw_clear_click_callback вызван с nil параметрами');
+      WriteLn('WARNING: adw_clear_click_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       app := TAdwaitaExampleApp(data);
       if app <> nil then
         app.OnClearClick(widget, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в adw_clear_click_callback');
+        WriteLn('ERROR: Invalid application pointer in adw_clear_click_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в adw_clear_click_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in adw_clear_click_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в adw_clear_click_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in adw_clear_click_callback: ', E.Message);
   end;
 end;
 
@@ -281,24 +281,24 @@ begin
   try
     if (data = nil) or (widget = nil) then
     begin
-      WriteLn('ПРЕДУПРЕЖДЕНИЕ: adw_toast_click_callback вызван с nil параметрами');
+      WriteLn('WARNING: adw_toast_click_callback called with nil parameters');
       Exit;
     end;
     
-    // Безопасная проверка типа через try-except
+    // Safe type checking through try-except
     try
       app := TAdwaitaExampleApp(data);
       if app <> nil then
         app.OnToastClick(widget, data)
       else
-        WriteLn('ОШИБКА: Некорректный указатель приложения в adw_toast_click_callback');
+        WriteLn('ERROR: Invalid application pointer in adw_toast_click_callback');
     except
       on E: Exception do
-        WriteLn('ОШИБКА: Некорректное приведение типа в adw_toast_click_callback: ', E.Message);
+        WriteLn('ERROR: Invalid type cast in adw_toast_click_callback: ', E.Message);
     end;
   except
     on E: Exception do
-      WriteLn('КРИТИЧЕСКАЯ ОШИБКА в adw_toast_click_callback: ', E.Message);
+      WriteLn('CRITICAL ERROR in adw_toast_click_callback: ', E.Message);
   end;
 end;
 
@@ -314,7 +314,7 @@ begin
   FResultLabel := nil;
   FCounterLabel := nil;
   
-  // Настройки окна
+  // Window settings
   Title := 'PasGTK4 Example Application';
   Width := 400;
   Height := 300;
@@ -327,65 +327,65 @@ var
   greet_button: PGtkButton;
   clear_button: PGtkButton;
 begin
-  // Вызываем базовую настройку
+  // Call base setup
   inherited SetupWindow;
   
-  // Добавляем заголовок
-  AddLabel('Добро пожаловать в PasGTK4!');
+  // Add title
+  AddLabel('Welcome to PasGTK4!');
   
-  // Создаем разделитель
+  // Create separator
   separator_box := TPasGTK4.CreateHorizontalBox(0);
   TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 10, 0, 10);
   AddWidget(PGtkWidget(separator_box));
   
-  // Счетчик кликов
-  FCounterLabel := AddLabel('Кликов: 0');
+  // Click counter
+  FCounterLabel := AddLabel('Clicks: 0');
   TPasGTK4.SetLabelJustify(FCounterLabel, GTK_JUSTIFY_CENTER);
   
-  // Кнопка для подсчета кликов
-  AddButton('Нажми меня!', @button_click_callback, Self);
+  // Button for counting clicks
+  AddButton('Click me!', @button_click_callback, Self);
   
-  // Разделитель
+  // Separator
   separator_box := TPasGTK4.CreateHorizontalBox(0);
   TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 10, 0, 10);
   AddWidget(PGtkWidget(separator_box));
   
-  // Поле ввода имени
-  AddLabel('Введите ваше имя:');
-  FNameEntry := AddEntry('Ваше имя');
+  // Name input field
+  AddLabel('Enter your name:');
+  FNameEntry := AddEntry('Your name');
   
-  // Метка для результата
+  // Result label
   FResultLabel := AddLabel('');
   TPasGTK4.SetLabelJustify(FResultLabel, GTK_JUSTIFY_CENTER);
   
-  // Контейнер для кнопок
+  // Button container
   button_box := TPasGTK4.CreateHorizontalBox(5);
   TPasGTK4.SetWidgetMargins(PGtkWidget(button_box), 0, 10, 0, 0);
   AddWidget(PGtkWidget(button_box));
   
-  // Создаем кнопки действий отдельно
-  greet_button := TPasGTK4.CreateButton('Поздороваться');
+  // Create action buttons separately
+  greet_button := TPasGTK4.CreateButton('Greet');
   TPasGTK4.ConnectSignal(PGtkWidget(greet_button), 'clicked', @greet_click_callback, Self);
   TPasGTK4.AddToBox(button_box, PGtkWidget(greet_button));
   
-  clear_button := TPasGTK4.CreateButton('Очистить');
+  clear_button := TPasGTK4.CreateButton('Clear');
   TPasGTK4.ConnectSignal(PGtkWidget(clear_button), 'clicked', @clear_click_callback, Self);
   TPasGTK4.AddToBox(button_box, PGtkWidget(clear_button));
 end;
 
 procedure TExampleApp.OnButtonClick(widget: PGtkWidget; data: Pointer);
 begin
-  // Проверяем, что виджет создан
+  // Check if widget is created
   if FCounterLabel = nil then
   begin
-    WriteLn('ОШИБКА: FCounterLabel не создан');
+    WriteLn('ERROR: FCounterLabel not created');
     Exit;
   end;
   
   Inc(FClickCount);
-  TPasGTK4.SetLabelText(FCounterLabel, 'Кликов: ' + IntToStr(FClickCount));
+  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: ' + IntToStr(FClickCount));
   
-  WriteLn('Кнопка нажата! Всего кликов: ', FClickCount);
+  WriteLn('Button clicked! Total clicks: ', FClickCount);
 end;
 
 procedure TExampleApp.OnGreetClick(widget: PGtkWidget; data: Pointer);
@@ -397,58 +397,58 @@ begin
   WriteLn('[DEBUG] FNameEntry = ', PtrUInt(FNameEntry));
 {$ENDIF}
   
-  // Проверяем, что виджеты созданы
+  // Check if widgets are created
   if FNameEntry = nil then
   begin
-    WriteLn('ОШИБКА: FNameEntry не создан');
+    WriteLn('ERROR: FNameEntry not created');
     Exit;
   end;
   
   if FResultLabel = nil then
   begin
-    WriteLn('ОШИБКА: FResultLabel не создан');
+    WriteLn('ERROR: FResultLabel not created');
     Exit;
   end;
   
   name := TPasGTK4.GetEntryText(FNameEntry);
   
   if Trim(name) = '' then
-    greeting := 'Привет, незнакомец!'
+    greeting := 'Hello, stranger!'
   else
-    greeting := 'Привет, ' + name + '! Добро пожаловать в PasGTK4!';
+    greeting := 'Hello, ' + name + '! Welcome to PasGTK4!';
   
   TPasGTK4.SetLabelText(FResultLabel, greeting);
   
-  WriteLn('Приветствие: ', greeting);
+  WriteLn('Greeting: ', greeting);
 end;
 
 procedure TExampleApp.OnClearClick(widget: PGtkWidget; data: Pointer);
 begin
-  // Проверяем, что виджеты созданы
+  // Check if widgets are created
   if FNameEntry = nil then
   begin
-    WriteLn('ОШИБКА: FNameEntry не создан');
+    WriteLn('ERROR: FNameEntry not created');
     Exit;
   end;
   
   if FResultLabel = nil then
   begin
-    WriteLn('ОШИБКА: FResultLabel не создан');
+    WriteLn('ERROR: FResultLabel not created');
     Exit;
   end;
   
   if FCounterLabel = nil then
   begin
-    WriteLn('ОШИБКА: FCounterLabel не создан');
+    WriteLn('ERROR: FCounterLabel not created');
     Exit;
   end;
   
   TPasGTK4.SetEntryText(FNameEntry, '');
   TPasGTK4.SetLabelText(FResultLabel, '');
   FClickCount := 0;
-  TPasGTK4.SetLabelText(FCounterLabel, 'Кликов: 0');
+  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: 0');
   
-  WriteLn('Данные очищены');
+  WriteLn('Data cleared');
 end;
 
 { TAdwaitaExampleApp }
@@ -467,12 +467,12 @@ begin
   FResultLabel := nil;
   FCounterLabel := nil;
   
-  // Создаем Adwaita приложение
+  // Create Adwaita application
   FApp := TPasGTK4.CreateAdwApplication('com.anmitalidev.pasgtk4.adwaita-example');
   if FApp = nil then
-    raise Exception.Create('Не удалось создать Adwaita приложение');
+    raise Exception.Create('Failed to create Adwaita application');
   
-  // Подключаем обработчик активации
+  // Connect activation handler
   TPasGTK4.ConnectApplicationSignal(PGtkApplication(FApp), 'activate', @adw_app_activate_callback, Self);
 end;
 
@@ -483,21 +483,21 @@ end;
 
 procedure TAdwaitaExampleApp.OnActivate(app: PAdwApplication; data: Pointer);
 begin
-  // Создаем Adwaita окно
+  // Create Adwaita window
   FWindow := TPasGTK4.CreateAdwWindow(FApp);
   if FWindow = nil then
   begin
-    WriteLn('ОШИБКА: Не удалось создать Adwaita окно');
+    WriteLn('ERROR: Failed to create Adwaita window');
     Exit;
   end;
   
-  // Устанавливаем размер окна
+  // Set window size
   TPasGTK4.SetWindowSize(PGtkWindow(FWindow), 500, 400);
   
-  // Настраиваем интерфейс
+  // Setup interface
   SetupWindow;
   
-  // Показываем окно
+  // Show window
   TPasGTK4.ShowWindow(PGtkWindow(FWindow));
 end;
 
@@ -511,79 +511,79 @@ var
   toast_button: PGtkButton;
   click_button: PGtkButton;
 begin
-  // Создаем HeaderBar (современная панель заголовка)
+  // Create HeaderBar (modern title bar)
   FHeaderBar := TPasGTK4.CreateHeaderBar;
   
-  // Создаем ToastOverlay (для уведомлений)
+  // Create ToastOverlay (for notifications)
   FToastOverlay := TPasGTK4.CreateToastOverlay;
   if FToastOverlay = nil then
   begin
-    WriteLn('ОШИБКА: Не удалось создать ToastOverlay');
+    WriteLn('ERROR: Failed to create ToastOverlay');
     Exit;
   end;
   
-  // Создаем основной контейнер
+  // Create main container
   FMainBox := TPasGTK4.CreateVerticalBox(12);
   TPasGTK4.SetWidgetMargins(PGtkWidget(FMainBox), 24, 24, 24, 24);
   
-  // Устанавливаем основной контейнер в ToastOverlay
+  // Set main container in ToastOverlay
   TPasGTK4.SetToastOverlayChild(FToastOverlay, PGtkWidget(FMainBox));
   
-  // Если есть HeaderBar, создаем заголовок
+  // If there's HeaderBar, create title
   if FHeaderBar <> nil then
   begin
-    title_label := TPasGTK4.CreateLabel('PasGTK4 с LibAdwaita');
+    title_label := TPasGTK4.CreateLabel('PasGTK4 with LibAdwaita');
     TPasGTK4.SetHeaderBarTitle(FHeaderBar, PGtkWidget(title_label));
   end;
   
-  // Устанавливаем содержимое окна (для AdwApplicationWindow)
+  // Set window content (for AdwApplicationWindow)
   TPasGTK4.SetAdwWindowContent(FWindow, PGtkWidget(FToastOverlay));
   
-  // Добавляем приветственный текст
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(TPasGTK4.CreateLabel('Добро пожаловать в современный PasGTK4!')));
+  // Add welcome text
+  TPasGTK4.AddToBox(FMainBox, PGtkWidget(TPasGTK4.CreateLabel('Welcome to modern PasGTK4!')));
   
-  // Создаем разделитель
+  // Create separator
   separator_box := TPasGTK4.CreateHorizontalBox(0);
   TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 12, 0, 12);
   TPasGTK4.AddToBox(FMainBox, PGtkWidget(separator_box));
   
-  // Счетчик кликов
-  FCounterLabel := TPasGTK4.CreateLabel('Кликов: 0');
+  // Click counter
+  FCounterLabel := TPasGTK4.CreateLabel('Clicks: 0');
   TPasGTK4.SetLabelJustify(FCounterLabel, GTK_JUSTIFY_CENTER);
   TPasGTK4.AddToBox(FMainBox, PGtkWidget(FCounterLabel));
   
-  // Кнопка для подсчета кликов
-  click_button := TPasGTK4.CreateButton('Нажми меня!');
+  // Button for counting clicks
+  click_button := TPasGTK4.CreateButton('Click me!');
   TPasGTK4.ConnectSignal(PGtkWidget(click_button), 'clicked', @adw_button_click_callback, Self);
   TPasGTK4.AddToBox(FMainBox, PGtkWidget(click_button));
   
-  // Разделитель
+  // Separator
   separator_box := TPasGTK4.CreateHorizontalBox(0);
   TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 12, 0, 12);
   TPasGTK4.AddToBox(FMainBox, PGtkWidget(separator_box));
   
-  // Поле ввода имени
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(TPasGTK4.CreateLabel('Введите ваше имя:')));
+  // Name input field
+  TPasGTK4.AddToBox(FMainBox, PGtkWidget(TPasGTK4.CreateLabel('Enter your name:')));
   FNameEntry := TPasGTK4.CreateEntry;
-  TPasGTK4.SetEntryPlaceholder(FNameEntry, 'Ваше имя');
+  TPasGTK4.SetEntryPlaceholder(FNameEntry, 'Your name');
   TPasGTK4.AddToBox(FMainBox, PGtkWidget(FNameEntry));
   
-  // Метка для результата
+  // Result label
   FResultLabel := TPasGTK4.CreateLabel('');
   TPasGTK4.SetLabelJustify(FResultLabel, GTK_JUSTIFY_CENTER);
   TPasGTK4.AddToBox(FMainBox, PGtkWidget(FResultLabel));
   
-  // Контейнер для кнопок
+  // Button container
   button_box := TPasGTK4.CreateHorizontalBox(8);
   TPasGTK4.SetWidgetMargins(PGtkWidget(button_box), 0, 12, 0, 0);
   TPasGTK4.AddToBox(FMainBox, PGtkWidget(button_box));
   
-  // Создаем кнопки действий
-  greet_button := TPasGTK4.CreateButton('Поздороваться');
+  // Create action buttons
+  greet_button := TPasGTK4.CreateButton('Greet');
   TPasGTK4.ConnectSignal(PGtkWidget(greet_button), 'clicked', @adw_greet_click_callback, Self);
   TPasGTK4.AddToBox(button_box, PGtkWidget(greet_button));
   
-  clear_button := TPasGTK4.CreateButton('Очистить');
+  clear_button := TPasGTK4.CreateButton('Clear');
   TPasGTK4.ConnectSignal(PGtkWidget(clear_button), 'clicked', @adw_clear_click_callback, Self);
   TPasGTK4.AddToBox(button_box, PGtkWidget(clear_button));
   
@@ -599,16 +599,16 @@ end;
 
 procedure TAdwaitaExampleApp.OnButtonClick(widget: PGtkWidget; data: Pointer);
 begin
-  // Проверяем, что виджет создан
+  // Check if widget is created
   if FCounterLabel = nil then
   begin
-    WriteLn('ОШИБКА: FCounterLabel не создан');
+    WriteLn('ERROR: FCounterLabel not created');
     Exit;
   end;
   
   Inc(FClickCount);
-  TPasGTK4.SetLabelText(FCounterLabel, 'Кликов: ' + IntToStr(FClickCount));
-  WriteLn('Кнопка нажата! Всего кликов: ', FClickCount);
+  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: ' + IntToStr(FClickCount));
+  WriteLn('Button clicked! Total clicks: ', FClickCount);
 end;
 
 procedure TAdwaitaExampleApp.OnGreetClick(widget: PGtkWidget; data: Pointer);
@@ -616,78 +616,78 @@ var
   name: string;
   greeting: string;
 begin
-  // Проверяем, что виджеты созданы
+  // Check if widgets are created
   if FNameEntry = nil then
   begin
-    WriteLn('ОШИБКА: FNameEntry не создан');
+    WriteLn('ERROR: FNameEntry not created');
     Exit;
   end;
   
   if FResultLabel = nil then
   begin
-    WriteLn('ОШИБКА: FResultLabel не создан');
+    WriteLn('ERROR: FResultLabel not created');
     Exit;
   end;
   
   name := TPasGTK4.GetEntryText(FNameEntry);
   
   if Trim(name) = '' then
-    greeting := 'Привет, незнакомец!'
+    greeting := 'Hello, stranger!'
   else
-    greeting := 'Привет, ' + name + '! Добро пожаловать в современный PasGTK4!';
+    greeting := 'Hello, ' + name + '! Welcome to modern PasGTK4!';
   
   TPasGTK4.SetLabelText(FResultLabel, greeting);
-  WriteLn('Приветствие: ', greeting);
+  WriteLn('Greeting: ', greeting);
 end;
 
 procedure TAdwaitaExampleApp.OnClearClick(widget: PGtkWidget; data: Pointer);
 begin
-  // Проверяем, что виджеты созданы
+  // Check if widgets are created
   if FNameEntry = nil then
   begin
-    WriteLn('ОШИБКА: FNameEntry не создан');
+    WriteLn('ERROR: FNameEntry not created');
     Exit;
   end;
   
   if FResultLabel = nil then
   begin
-    WriteLn('ОШИБКА: FResultLabel не создан');
+    WriteLn('ERROR: FResultLabel not created');
     Exit;
   end;
   
   if FCounterLabel = nil then
   begin
-    WriteLn('ОШИБКА: FCounterLabel не создан');
+    WriteLn('ERROR: FCounterLabel not created');
     Exit;
   end;
   
   TPasGTK4.SetEntryText(FNameEntry, '');
   TPasGTK4.SetLabelText(FResultLabel, '');
   FClickCount := 0;
-  TPasGTK4.SetLabelText(FCounterLabel, 'Кликов: 0');
-  WriteLn('Данные очищены');
+  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: 0');
+  WriteLn('Data cleared');
 end;
 
 procedure TAdwaitaExampleApp.OnToastClick(widget: PGtkWidget; data: Pointer);
 var
   toast: PAdwToast;
 begin
-  // Проверяем, что ToastOverlay создан
+  // Check if ToastOverlay is created
   if FToastOverlay = nil then
   begin
-    WriteLn('ОШИБКА: FToastOverlay не создан');
+    WriteLn('ERROR: FToastOverlay not created');
     Exit;
   end;
   
-  toast := TPasGTK4.CreateToast('Современное уведомление LibAdwaita!');
+  toast := TPasGTK4.CreateToast('Modern LibAdwaita notification!');
   if toast = nil then
   begin
-    WriteLn('ОШИБКА: Не удалось создать Toast');
+    WriteLn('ERROR: Failed to create Toast');
     Exit;
   end;
   
   TPasGTK4.ShowToast(FToastOverlay, toast);
-  WriteLn('Показано Toast уведомление');
+  WriteLn('Toast notification shown');
 end;
 
 var
@@ -703,78 +703,78 @@ begin
   WriteLn('License: Apache 2.0');
   WriteLn('---');
   
-  // Проверяем параметры командной строки
+  // Check command line parameters
   use_adwaita := (ParamCount > 0) and (ParamStr(1) = '--adwaita');
   
   if use_adwaita then
   begin
-    WriteLn('Режим: LibAdwaita (современный дизайн GNOME)');
+    WriteLn('Mode: LibAdwaita (modern GNOME design)');
     WriteLn('');
     
-    // Инициализируем PasGTK4 с LibAdwaita
+    // Initialize PasGTK4 with LibAdwaita
     if not InitializePasGTK4WithAdwaita then
     begin
-      WriteLn('ОШИБКА: Не удалось инициализировать PasGTK4 с LibAdwaita');
-      WriteLn('Убедитесь, что GTK4 и LibAdwaita установлены в системе');
+      WriteLn('ERROR: Failed to initialize PasGTK4 with LibAdwaita');
+      WriteLn('Make sure GTK4 and LibAdwaita are installed on your system');
       Halt(1);
     end;
     
-    WriteLn('PasGTK4 с LibAdwaita успешно инициализирован');
+    WriteLn('PasGTK4 with LibAdwaita successfully initialized');
     
     try
-      // Создаем и запускаем Adwaita приложение
+      // Create and run Adwaita application
       adw_app := TAdwaitaExampleApp.Create;
       try
-        WriteLn('Запуск современного приложения...');
+        WriteLn('Starting modern application...');
         result_code := adw_app.Run;
-        WriteLn('Приложение завершено с кодом: ', result_code);
+        WriteLn('Application finished with code: ', result_code);
       finally
         adw_app.Free;
       end;
     except
       on E: Exception do
       begin
-        WriteLn('ОШИБКА: ', E.Message);
+        WriteLn('ERROR: ', E.Message);
         Halt(1);
       end;
     end;
   end
   else
   begin
-    WriteLn('Режим: Обычный GTK4');
-    WriteLn('Запустите с параметром --adwaita для современного дизайна');
+    WriteLn('Mode: Regular GTK4');
+    WriteLn('Run with --adwaita parameter for modern design');
     WriteLn('');
     
-    // Инициализируем PasGTK4
+    // Initialize PasGTK4
     if not InitializePasGTK4 then
     begin
-      WriteLn('ОШИБКА: Не удалось инициализировать PasGTK4');
-      WriteLn('Убедитесь, что GTK4 установлен в системе');
+      WriteLn('ERROR: Failed to initialize PasGTK4');
+      WriteLn('Make sure GTK4 is installed on your system');
       Halt(1);
     end;
     
-    WriteLn('PasGTK4 успешно инициализирован');
+    WriteLn('PasGTK4 successfully initialized');
     
     try
-      // Создаем и запускаем обычное приложение
+      // Create and run regular application
       app := TExampleApp.Create;
       try
-        WriteLn('Запуск приложения...');
+        WriteLn('Starting application...');
         result_code := app.Run;
-        WriteLn('Приложение завершено с кодом: ', result_code);
+        WriteLn('Application finished with code: ', result_code);
       finally
         app.Free;
       end;
     except
       on E: Exception do
       begin
-        WriteLn('ОШИБКА: ', E.Message);
+        WriteLn('ERROR: ', E.Message);
         Halt(1);
       end;
     end;
   end;
   
-  // Финализируем PasGTK4
+  // Finalize PasGTK4
   FinalizePasGTK4;
-  WriteLn('PasGTK4 финализирован');
+  WriteLn('PasGTK4 finalized');
 end.

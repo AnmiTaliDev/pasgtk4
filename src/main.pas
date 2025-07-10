@@ -25,7 +25,7 @@ uses
   wrapper, SysUtils;
 
 type
-  { TGTKApplication - Высокоуровневый класс для создания GTK4 приложений }
+  { TGTKApplication - High-level class for creating GTK4 applications }
   TGTKApplication = class
   private
     FApp: PGtkApplication;
@@ -41,20 +41,20 @@ type
     constructor Create(const app_id: string);
     destructor Destroy; override;
     
-    // Свойства
+    // Properties
     property Title: string read FTitle write FTitle;
     property Width: Integer read FWidth write FWidth;
     property Height: Integer read FHeight write FHeight;
     property OnActivate: TGtkApplicationCallback read FOnActivate write FOnActivate;
     
-    // Методы
+    // Methods
     function Run: Integer;
     procedure SetupWindow; virtual;
     function GetWindow: PGtkWindow;
     function GetApplication: PGtkApplication;
   end;
 
-  { TGTKSimpleWindow - Простое окно с базовой функциональностью }
+  { TGTKSimpleWindow - Simple window with basic functionality }
   TGTKSimpleWindow = class(TGTKApplication)
   private
     FMainBox: PGtkBox;
@@ -75,7 +75,7 @@ type
     function AddEntry(const placeholder: string = ''): PGtkEntry;
   end;
 
-  { TGTKGridWindow - Окно с сеткой для сложных макетов }
+  { TGTKGridWindow - Window with grid layout for complex layouts }
   TGTKGridWindow = class(TGTKApplication)
   private
     FMainGrid: PGtkGrid;
@@ -92,7 +92,7 @@ type
     function AttachEntry(left, top, w, h: Integer; const placeholder: string = ''): PGtkEntry;
   end;
 
-// Утилиты
+// Utilities
 function InitializePasGTK4: Boolean;
 function InitializePasGTK4WithAdwaita: Boolean;
 procedure FinalizePasGTK4;
@@ -100,7 +100,7 @@ function GetPasGTK4Version: string;
 
 implementation
 
-// Утилиты
+// Utilities
 function InitializePasGTK4: Boolean;
 begin
   Result := TPasGTK4.Initialize;
@@ -123,7 +123,7 @@ begin
   Result := TPasGTK4.GetVersion;
 end;
 
-// Процедура-обертка для вызова метода класса
+// Wrapper procedure for calling class method
 procedure application_activate_wrapper(app: PGtkApplication; data: Pointer); cdecl;
 var
   gtk_app: TGTKApplication;
@@ -142,11 +142,11 @@ begin
   inherited Create;
   
   if not TPasGTK4.IsInitialized then
-    raise Exception.Create('PasGTK4 не инициализирован. Вызовите InitializePasGTK4 перед созданием приложения.');
+    raise Exception.Create('PasGTK4 not initialized. Call InitializePasGTK4 before creating application.');
   
   FApp := TPasGTK4.CreateApplication(app_id);
   if FApp = nil then
-    raise Exception.Create('Не удалось создать GTK приложение');
+    raise Exception.Create('Failed to create GTK application');
   
   FWindow := nil;
   FTitle := 'PasGTK4 Application';
@@ -154,30 +154,30 @@ begin
   FHeight := 600;
   FOnActivate := nil;
   
-  // Подключаем обработчик активации
+  // Connect activation handler
   TPasGTK4.ConnectApplicationSignal(FApp, 'activate', @application_activate_wrapper, Self);
 end;
 
 destructor TGTKApplication.Destroy;
 begin
-  // GTK объекты управляются самой библиотекой GTK
+  // GTK objects are managed by GTK library itself
   inherited Destroy;
 end;
 
 procedure TGTKApplication.DefaultActivate(app: PGtkApplication; data: Pointer);
 begin
-  // Создаем окно
+  // Create window
   FWindow := TPasGTK4.CreateWindow(FApp);
   TPasGTK4.SetWindowTitle(FWindow, FTitle);
   TPasGTK4.SetWindowSize(FWindow, FWidth, FHeight);
   
-  // Вызываем пользовательский обработчик или базовую настройку
+  // Call user handler or basic setup
   if Assigned(FOnActivate) then
     FOnActivate(app, data)
   else
     SetupWindow;
   
-  // Показываем окно
+  // Show window
   TPasGTK4.ShowWindow(FWindow);
 end;
 
@@ -188,8 +188,8 @@ end;
 
 procedure TGTKApplication.SetupWindow;
 begin
-  // Базовая реализация - пустое окно
-  // Переопределяется в наследниках
+  // Basic implementation - empty window
+  // Overridden in descendants
 end;
 
 function TGTKApplication.GetWindow: PGtkWindow;
@@ -214,16 +214,16 @@ end;
 
 procedure TGTKSimpleWindow.SetupWindow;
 begin
-  // Создаем основной контейнер
+  // Create main container
   if FIsVertical then
     FMainBox := TPasGTK4.CreateVerticalBox(FSpacing)
   else
     FMainBox := TPasGTK4.CreateHorizontalBox(FSpacing);
   
-  // Устанавливаем отступы
+  // Set margins
   TPasGTK4.SetWidgetMargins(PGtkWidget(FMainBox), 10, 10, 10, 10);
   
-  // Добавляем в окно
+  // Add to window
   TPasGTK4.SetWindowChild(FWindow, PGtkWidget(FMainBox));
 end;
 
@@ -231,7 +231,7 @@ procedure TGTKSimpleWindow.AddWidget(widget: PGtkWidget);
 begin
   if FMainBox = nil then
   begin
-    WriteLn('Окно не инициализировано');
+    WriteLn('Window not initialized');
     Exit;
   end;
   TPasGTK4.AddToBox(FMainBox, widget);
@@ -269,13 +269,13 @@ end;
 
 procedure TGTKGridWindow.SetupWindow;
 begin
-  // Создаем сетку
+  // Create grid
   FMainGrid := TPasGTK4.CreateGrid;
   
-  // Устанавливаем отступы
+  // Set margins
   TPasGTK4.SetWidgetMargins(PGtkWidget(FMainGrid), 10, 10, 10, 10);
   
-  // Добавляем в окно
+  // Add to window
   TPasGTK4.SetWindowChild(FWindow, PGtkWidget(FMainGrid));
 end;
 
@@ -283,7 +283,7 @@ procedure TGTKGridWindow.AttachWidget(widget: PGtkWidget; left, top, w, h: Integ
 begin
   if FMainGrid = nil then
   begin
-    WriteLn('Окно не инициализировано');
+    WriteLn('Window not initialized');
     Exit;
   end;
   TPasGTK4.AttachToGrid(FMainGrid, widget, left, top, w, h);

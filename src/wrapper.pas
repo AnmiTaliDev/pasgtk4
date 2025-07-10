@@ -19,7 +19,7 @@ unit wrapper;
 
 {$mode objfpc}{$H+}
 
-// Условная компиляция отладочного вывода
+// Conditional compilation for debug output
 {$IFDEF DEBUG}
   {$DEFINE ENABLE_DEBUG_OUTPUT}
 {$ENDIF}
@@ -33,15 +33,15 @@ const
   PASGTK4_VERSION = '1.0.0';
 
 {$IFDEF ENABLE_DEBUG_OUTPUT}
-  // Отладочный вывод включен
+  // Debug output enabled
   procedure DebugWriteLn(const msg: string);
 {$ELSE}
-  // Пустая заглушка для release сборки
+  // Empty stub for release build
   procedure DebugWriteLn(const msg: string);
 {$ENDIF}
 
 type
-  // GTK4 основные типы
+  // GTK4 basic types
   gboolean = LongBool;
   PGtkWidget = Pointer;
   PGtkApplication = Pointer;
@@ -61,7 +61,7 @@ type
   PAdwToastOverlay = Pointer;
   PAdwToast = Pointer;
   
-  // Перечисления
+  // Enumerations
   GtkOrientation = (
     GTK_ORIENTATION_HORIZONTAL = 0,
     GTK_ORIENTATION_VERTICAL = 1
@@ -82,11 +82,11 @@ type
     GTK_JUSTIFY_FILL = 3
   );
   
-  // Callback типы
+  // Callback types
   TGtkCallback = procedure(widget: PGtkWidget; data: Pointer); cdecl;
   TGtkApplicationCallback = procedure(app: PGtkApplication; data: Pointer); cdecl;
   
-  // Класс для работы с GTK4
+  // Class for working with GTK4
   TPasGTK4 = class
   private
     class var FLibHandle: TLibHandle;
@@ -94,7 +94,7 @@ type
     class var FInitialized: Boolean;
     class var FAdwInitialized: Boolean;
     
-    // Указатели на функции GTK4
+    // GTK4 function pointers
     class var gtk_init_check: function: gboolean; cdecl;
     class var gtk_application_new: function(application_id: PChar; flags: cuint): PGtkApplication; cdecl;
     class var gtk_application_window_new: function(application: PGtkApplication): PGtkWindow; cdecl;
@@ -146,7 +146,7 @@ type
     class function GetAdwProcAddr(const name: string): Pointer;
     
   public
-    // Инициализация и финализация
+    // Initialization and finalization
     class function Initialize: Boolean;
     class function InitializeAdwaita: Boolean;
     class procedure Finalize;
@@ -154,19 +154,19 @@ type
     class function IsAdwaitaInitialized: Boolean;
     class function GetVersion: string;
     
-    // Приложение
+    // Application
     class function CreateApplication(const app_id: string): PGtkApplication;
     class function RunApplication(app: PGtkApplication): Integer;
     class procedure ConnectApplicationSignal(app: PGtkApplication; const signal: string; callback: TGtkApplicationCallback; data: Pointer = nil);
     
-    // Окна
+    // Windows
     class function CreateWindow(app: PGtkApplication): PGtkWindow;
     class procedure SetWindowTitle(window: PGtkWindow; const title: string);
     class procedure SetWindowSize(window: PGtkWindow; width, height: Integer);
     class procedure SetWindowChild(window: PGtkWindow; child: PGtkWidget);
     class procedure ShowWindow(window: PGtkWindow);
     
-    // Виджеты
+    // Widgets
     class function CreateButton(const text: string): PGtkButton;
     class function CreateLabel(const text: string): PGtkLabel;
     class procedure SetLabelText(label_widget: PGtkLabel; const text: string);
@@ -176,7 +176,7 @@ type
     class function GetEntryText(entry: PGtkEntry): string;
     class procedure SetEntryPlaceholder(entry: PGtkEntry; const text: string);
     
-    // Контейнеры
+    // Containers
     class function CreateBox(orientation: GtkOrientation; spacing: Integer): PGtkBox;
     class function CreateVerticalBox(spacing: Integer): PGtkBox;
     class function CreateHorizontalBox(spacing: Integer): PGtkBox;
@@ -185,14 +185,14 @@ type
     class function CreateGrid: PGtkGrid;
     class procedure AttachToGrid(grid: PGtkGrid; widget: PGtkWidget; left, top, width, height: Integer);
     
-    // Выравнивание и отступы
+    // Alignment and margins
     class procedure SetWidgetAlign(widget: PGtkWidget; halign, valign: GtkAlign);
     class procedure SetWidgetMargins(widget: PGtkWidget; top, bottom, start, end_margin: Integer);
     
-    // Сигналы
+    // Signals
     class procedure ConnectSignal(widget: PGtkWidget; const signal: string; callback: TGtkCallback; data: Pointer = nil);
     
-    // LibAdwaita методы
+    // LibAdwaita methods
     class function CreateAdwApplication(const app_id: string): PAdwApplication;
     class function CreateAdwWindow(app: PAdwApplication): PAdwApplicationWindow;
     class procedure SetAdwWindowContent(window: PAdwApplicationWindow; content: PGtkWidget);
@@ -214,7 +214,7 @@ end;
 {$ELSE}
 procedure DebugWriteLn(const msg: string);
 begin
-  // Ничего не делаем в release сборке
+  // Do nothing in release build
 end;
 {$ENDIF}
 
@@ -222,10 +222,10 @@ class function TPasGTK4.LoadLibrary: Boolean;
 const
   GTK_LIBS: array[0..4] of string = (
     'libgtk-4.so.1',      // Linux
-    'libgtk-4.so',        // Linux альтернативный
+    'libgtk-4.so',        // Linux alternative
     'libgtk-4.dylib',     // macOS
     'gtk-4.dll',          // Windows
-    'libgtk-4-1.dll'      // Windows альтернативный
+    'libgtk-4-1.dll'      // Windows alternative
   );
 var
   i: Integer;
@@ -252,7 +252,7 @@ class function TPasGTK4.LoadAdwaitaLibrary: Boolean;
 const
   ADW_LIBS: array[0..3] of string = (
     'libadwaita-1.so.0',    // Linux
-    'libadwaita-1.so',      // Linux альтернативный
+    'libadwaita-1.so',      // Linux alternative
     'libadwaita-1.dylib',   // macOS
     'adwaita-1.dll'         // Windows
   );
@@ -287,15 +287,15 @@ begin
     Exit;
   end;
   
-  DebugWriteLn('Загружаем GTK4 библиотеку...');
+  DebugWriteLn('Loading GTK4 library...');
   if not LoadLibrary then
   begin
-    WriteLn('ОШИБКА: Не удалось загрузить GTK4 библиотеку');
+    WriteLn('ERROR: Failed to load GTK4 library');
     Exit;
   end;
   
-  DebugWriteLn('Загружаем функции GTK4...');
-  // Загружаем указатели на функции
+  DebugWriteLn('Loading GTK4 functions...');
+  // Load function pointers
   Pointer(gtk_init_check) := GetProcAddr('gtk_init_check');
   Pointer(gtk_application_new) := GetProcAddr('gtk_application_new');
   Pointer(gtk_application_window_new) := GetProcAddr('gtk_application_window_new');
@@ -327,27 +327,27 @@ begin
   Pointer(g_signal_connect_data) := GetProcAddr('g_signal_connect_data');
   Pointer(g_application_run) := GetProcAddr('g_application_run');
   
-  // Проверяем основные функции
+  // Check essential functions
   if not (Assigned(gtk_application_new) and 
           Assigned(gtk_application_window_new) and Assigned(gtk_window_set_title) and
           Assigned(g_signal_connect_data) and Assigned(g_application_run)) then
   begin
-    WriteLn('ОШИБКА: Не удалось загрузить все необходимые функции GTK4');
+    WriteLn('ERROR: Failed to load all required GTK4 functions');
     Exit;
   end;
   
-  // Инициализируем GTK4 если функция доступна
+  // Initialize GTK4 if function is available
   if Assigned(gtk_init_check) then
   begin
-    DebugWriteLn('Инициализируем GTK4...');
+    DebugWriteLn('Initializing GTK4...');
     if not gtk_init_check() then
     begin
-      WriteLn('ОШИБКА: Не удалось инициализировать GTK4');
+      WriteLn('ERROR: Failed to initialize GTK4');
       Exit;
     end;
-    DebugWriteLn('GTK4 инициализирован успешно');
+    DebugWriteLn('GTK4 initialized successfully');
   end else
-    DebugWriteLn('GTK4 готов к использованию');
+    DebugWriteLn('GTK4 ready to use');
   
   FInitialized := True;
   Result := True;
@@ -387,19 +387,19 @@ begin
   
   if not FInitialized then
   begin
-    WriteLn('ОШИБКА: GTK4 должен быть инициализирован перед LibAdwaita');
+    WriteLn('ERROR: GTK4 must be initialized before LibAdwaita');
     Exit;
   end;
   
-  DebugWriteLn('Загружаем LibAdwaita библиотеку...');
+  DebugWriteLn('Loading LibAdwaita library...');
   if not LoadAdwaitaLibrary then
   begin
-    WriteLn('ОШИБКА: Не удалось загрузить LibAdwaita библиотеку');
+    WriteLn('ERROR: Failed to load LibAdwaita library');
     Exit;
   end;
   
-  DebugWriteLn('Загружаем функции LibAdwaita...');
-  // Загружаем указатели на функции LibAdwaita
+  DebugWriteLn('Loading LibAdwaita functions...');
+  // Load LibAdwaita function pointers
   Pointer(adw_init) := GetAdwProcAddr('adw_init');
   Pointer(adw_application_new) := GetAdwProcAddr('adw_application_new');
   Pointer(adw_application_window_new) := GetAdwProcAddr('adw_application_window_new');
@@ -411,23 +411,23 @@ begin
   Pointer(adw_toast_new) := GetAdwProcAddr('adw_toast_new');
   Pointer(adw_toast_overlay_add_toast) := GetAdwProcAddr('adw_toast_overlay_add_toast');
   
-  // Проверяем основные функции
+  // Check essential functions
   if not (Assigned(adw_init) and Assigned(adw_application_new) and 
           Assigned(adw_application_window_new) and Assigned(adw_header_bar_new)) then
   begin
-    WriteLn('ОШИБКА: Не удалось загрузить все необходимые функции LibAdwaita');
+    WriteLn('ERROR: Failed to load all required LibAdwaita functions');
     Exit;
   end;
   
-  // Инициализируем LibAdwaita
-  DebugWriteLn('Инициализируем LibAdwaita...');
+  // Initialize LibAdwaita
+  DebugWriteLn('Initializing LibAdwaita...');
   try
     adw_init();
-    DebugWriteLn('LibAdwaita инициализирован успешно');
+    DebugWriteLn('LibAdwaita initialized successfully');
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при инициализации LibAdwaita: ', E.Message);
+      WriteLn('ERROR while initializing LibAdwaita: ', E.Message);
       Exit;
     end;
   end;
@@ -446,12 +446,12 @@ begin
   Result := PASGTK4_VERSION;
 end;
 
-// Приложение
+// Application
 class function TPasGTK4.CreateApplication(const app_id: string): PGtkApplication;
 begin
   if not Assigned(gtk_application_new) then
   begin
-    WriteLn('ОШИБКА: Функция gtk_application_new не загружена');
+    WriteLn('ERROR: Function gtk_application_new not loaded');
     Result := nil;
     Exit;
   end;
@@ -459,11 +459,11 @@ begin
   try
     Result := gtk_application_new(PChar(app_id), 0);
     if Result = nil then
-      WriteLn('ОШИБКА: gtk_application_new вернула nil');
+      WriteLn('ERROR: gtk_application_new returned nil');
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при создании приложения: ', E.Message);
+      WriteLn('ERROR while creating application: ', E.Message);
       Result := nil;
     end;
   end;
@@ -475,19 +475,19 @@ var
 begin
   if app = nil then
   begin
-    WriteLn('ОШИБКА: Приложение не создано');
+    WriteLn('ERROR: Application not created');
     Result := -1;
     Exit;
   end;
   
   if not Assigned(g_application_run) then
   begin
-    WriteLn('ОШИБКА: Функция g_application_run не загружена');
+    WriteLn('ERROR: Function g_application_run not loaded');
     Result := -1;
     Exit;
   end;
   
-  // Маскируем исключения FPU, которые могут возникать в GTK4
+  // Mask FPU exceptions that may occur in GTK4
   oldFPUMask := GetExceptionMask;
   SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision]);
   
@@ -496,12 +496,12 @@ begin
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при запуске приложения: ', E.Message);
+      WriteLn('ERROR while running application: ', E.Message);
       Result := -1;
     end;
   end;
   
-  // Восстанавливаем маску FPU
+  // Restore FPU mask
   SetExceptionMask(oldFPUMask);
 end;
 
@@ -509,13 +509,13 @@ class procedure TPasGTK4.ConnectApplicationSignal(app: PGtkApplication; const si
 begin
   if not Assigned(g_signal_connect_data) or not Assigned(callback) or (app = nil) then
   begin
-    WriteLn('ОШИБКА: Некорректные параметры для подключения сигнала приложения');
+    WriteLn('ERROR: Invalid parameters for connecting application signal');
     Exit;
   end;
   g_signal_connect_data(app, PChar(signal), Pointer(callback), data, nil, 0);
 end;
 
-// Окна
+// Windows
 class function TPasGTK4.CreateWindow(app: PGtkApplication): PGtkWindow;
 begin
   Result := gtk_application_window_new(app);
@@ -525,7 +525,7 @@ class procedure TPasGTK4.SetWindowTitle(window: PGtkWindow; const title: string)
 begin
   if (window = nil) or not Assigned(gtk_window_set_title) then
   begin
-    WriteLn('ОШИБКА: window = nil или функция gtk_window_set_title не загружена');
+    WriteLn('ERROR: window = nil or function gtk_window_set_title not loaded');
     Exit;
   end;
   gtk_window_set_title(window, PChar(title));
@@ -535,7 +535,7 @@ class procedure TPasGTK4.SetWindowSize(window: PGtkWindow; width, height: Intege
 begin
   if (window = nil) or not Assigned(gtk_window_set_default_size) then
   begin
-    WriteLn('ОШИБКА: window = nil или функция gtk_window_set_default_size не загружена');
+    WriteLn('ERROR: window = nil or function gtk_window_set_default_size not loaded');
     Exit;
   end;
   gtk_window_set_default_size(window, width, height);
@@ -545,7 +545,7 @@ class procedure TPasGTK4.SetWindowChild(window: PGtkWindow; child: PGtkWidget);
 begin
   if (window = nil) or not Assigned(gtk_window_set_child) then
   begin
-    WriteLn('ОШИБКА: window = nil или функция gtk_window_set_child не загружена');
+    WriteLn('ERROR: window = nil or function gtk_window_set_child not loaded');
     Exit;
   end;
   gtk_window_set_child(window, child);
@@ -555,13 +555,13 @@ class procedure TPasGTK4.ShowWindow(window: PGtkWindow);
 begin
   if (window = nil) or not Assigned(gtk_window_present) then
   begin
-    WriteLn('ОШИБКА: window = nil или функция gtk_window_present не загружена');
+    WriteLn('ERROR: window = nil or function gtk_window_present not loaded');
     Exit;
   end;
   gtk_window_present(window);
 end;
 
-// Виджеты
+// Widgets
 class function TPasGTK4.CreateButton(const text: string): PGtkButton;
 begin
   Result := gtk_button_new_with_label(PChar(text));
@@ -586,7 +586,7 @@ class function TPasGTK4.CreateEntry: PGtkEntry;
 begin
   if not Assigned(gtk_entry_new) then
   begin
-    WriteLn('ОШИБКА: gtk_entry_new не загружена');
+    WriteLn('ERROR: gtk_entry_new not loaded');
     Result := nil;
     Exit;
   end;
@@ -594,13 +594,13 @@ begin
   try
     Result := gtk_entry_new();
     if Result = nil then
-      WriteLn('ОШИБКА: gtk_entry_new вернула nil')
+      WriteLn('ERROR: gtk_entry_new returned nil')
     else
-      DebugWriteLn('Entry создан успешно');
+      DebugWriteLn('Entry created successfully');
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при создании entry: ', E.Message);
+      WriteLn('ERROR while creating entry: ', E.Message);
       Result := nil;
     end;
   end;
@@ -610,7 +610,7 @@ class procedure TPasGTK4.SetEntryText(entry: PGtkEntry; const text: string);
 begin
   if entry = nil then
   begin
-    WriteLn('ОШИБКА: entry = nil в SetEntryText');
+    WriteLn('ERROR: entry = nil in SetEntryText');
     Exit;
   end;
   
@@ -622,10 +622,10 @@ begin
     else if Assigned(gtk_entry_set_text) then
       gtk_entry_set_text(entry, PChar(text))
     else
-      WriteLn('ОШИБКА: ни gtk_editable_set_text, ни gtk_entry_set_text не загружены');
+      WriteLn('ERROR: neither gtk_editable_set_text nor gtk_entry_set_text loaded');
   except
     on E: Exception do
-      WriteLn('ОШИБКА при установке текста entry: ', E.Message);
+      WriteLn('ERROR while setting entry text: ', E.Message);
   end;
 end;
 
@@ -636,7 +636,7 @@ begin
   Result := '';
   if entry = nil then
   begin
-    WriteLn('ОШИБКА: entry = nil');
+    WriteLn('ERROR: entry = nil');
     Exit;
   end;
   
@@ -661,13 +661,13 @@ begin
     end
     else
     begin
-      WriteLn('ОШИБКА: ни gtk_editable_get_text, ни gtk_entry_get_text не загружены');
+      WriteLn('ERROR: neither gtk_editable_get_text nor gtk_entry_get_text loaded');
       Exit;
     end;
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при получении текста entry: ', E.Message);
+      WriteLn('ERROR while getting entry text: ', E.Message);
       Result := '';
     end;
   end;
@@ -678,7 +678,7 @@ begin
   gtk_entry_set_placeholder_text(entry, PChar(text));
 end;
 
-// Контейнеры
+// Containers
 class function TPasGTK4.CreateBox(orientation: GtkOrientation; spacing: Integer): PGtkBox;
 begin
   Result := gtk_box_new(orientation, spacing);
@@ -714,7 +714,7 @@ begin
   gtk_grid_attach(grid, widget, left, top, width, height);
 end;
 
-// Выравнивание и отступы
+// Alignment and margins
 class procedure TPasGTK4.SetWidgetAlign(widget: PGtkWidget; halign, valign: GtkAlign);
 begin
   gtk_widget_set_halign(widget, halign);
@@ -729,30 +729,30 @@ begin
   gtk_widget_set_margin_end(widget, end_margin);
 end;
 
-// Сигналы
+// Signals
 class procedure TPasGTK4.ConnectSignal(widget: PGtkWidget; const signal: string; callback: TGtkCallback; data: Pointer);
 begin
   if not Assigned(g_signal_connect_data) or not Assigned(callback) or (widget = nil) then
   begin
-    WriteLn('ОШИБКА: Некорректные параметры для подключения сигнала виджета');
+    WriteLn('ERROR: Invalid parameters for connecting widget signal');
     Exit;
   end;
   g_signal_connect_data(widget, PChar(signal), Pointer(callback), data, nil, 0);
 end;
 
-// LibAdwaita методы
+// LibAdwaita methods
 class function TPasGTK4.CreateAdwApplication(const app_id: string): PAdwApplication;
 begin
   if not FAdwInitialized then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован');
+    WriteLn('ERROR: LibAdwaita not initialized');
     Result := nil;
     Exit;
   end;
   
   if not Assigned(adw_application_new) then
   begin
-    WriteLn('ОШИБКА: Функция adw_application_new не загружена');
+    WriteLn('ERROR: Function adw_application_new not loaded');
     Result := nil;
     Exit;
   end;
@@ -760,11 +760,11 @@ begin
   try
     Result := adw_application_new(PChar(app_id), 0);
     if Result = nil then
-      WriteLn('ОШИБКА: adw_application_new вернула nil');
+      WriteLn('ERROR: adw_application_new returned nil');
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при создании Adwaita приложения: ', E.Message);
+      WriteLn('ERROR while creating Adwaita application: ', E.Message);
       Result := nil;
     end;
   end;
@@ -774,14 +774,14 @@ class function TPasGTK4.CreateAdwWindow(app: PAdwApplication): PAdwApplicationWi
 begin
   if not FAdwInitialized then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован');
+    WriteLn('ERROR: LibAdwaita not initialized');
     Result := nil;
     Exit;
   end;
   
   if (app = nil) or not Assigned(adw_application_window_new) then
   begin
-    WriteLn('ОШИБКА: Некорректное приложение или функция не загружена');
+    WriteLn('ERROR: Invalid application or function not loaded');
     Result := nil;
     Exit;
   end;
@@ -791,7 +791,7 @@ begin
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при создании Adwaita окна: ', E.Message);
+      WriteLn('ERROR while creating Adwaita window: ', E.Message);
       Result := nil;
     end;
   end;
@@ -801,13 +801,13 @@ class procedure TPasGTK4.SetAdwWindowContent(window: PAdwApplicationWindow; cont
 begin
   if not FAdwInitialized or (window = nil) then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован или window = nil');
+    WriteLn('ERROR: LibAdwaita not initialized or window = nil');
     Exit;
   end;
   
   if not Assigned(adw_application_window_set_content) then
   begin
-    WriteLn('ОШИБКА: Функция adw_application_window_set_content не загружена');
+    WriteLn('ERROR: Function adw_application_window_set_content not loaded');
     Exit;
   end;
   
@@ -815,7 +815,7 @@ begin
     adw_application_window_set_content(window, content);
   except
     on E: Exception do
-      WriteLn('ОШИБКА при установке содержимого Adwaita окна: ', E.Message);
+      WriteLn('ERROR while setting Adwaita window content: ', E.Message);
   end;
 end;
 
@@ -823,14 +823,14 @@ class function TPasGTK4.CreateHeaderBar: PAdwHeaderBar;
 begin
   if not FAdwInitialized then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован');
+    WriteLn('ERROR: LibAdwaita not initialized');
     Result := nil;
     Exit;
   end;
   
   if not Assigned(adw_header_bar_new) then
   begin
-    WriteLn('ОШИБКА: Функция adw_header_bar_new не загружена');
+    WriteLn('ERROR: Function adw_header_bar_new not loaded');
     Result := nil;
     Exit;
   end;
@@ -840,7 +840,7 @@ begin
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при создании HeaderBar: ', E.Message);
+      WriteLn('ERROR while creating HeaderBar: ', E.Message);
       Result := nil;
     end;
   end;
@@ -850,13 +850,13 @@ class procedure TPasGTK4.SetHeaderBarTitle(header_bar: PAdwHeaderBar; title_widg
 begin
   if not FAdwInitialized or (header_bar = nil) then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован или header_bar = nil');
+    WriteLn('ERROR: LibAdwaita not initialized or header_bar = nil');
     Exit;
   end;
   
   if not Assigned(adw_header_bar_set_title_widget) then
   begin
-    WriteLn('ОШИБКА: Функция adw_header_bar_set_title_widget не загружена');
+    WriteLn('ERROR: Function adw_header_bar_set_title_widget not loaded');
     Exit;
   end;
   
@@ -864,7 +864,7 @@ begin
     adw_header_bar_set_title_widget(header_bar, title_widget);
   except
     on E: Exception do
-      WriteLn('ОШИБКА при установке заголовка HeaderBar: ', E.Message);
+      WriteLn('ERROR while setting HeaderBar title: ', E.Message);
   end;
 end;
 
@@ -872,14 +872,14 @@ class function TPasGTK4.CreateToastOverlay: PAdwToastOverlay;
 begin
   if not FAdwInitialized then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован');
+    WriteLn('ERROR: LibAdwaita not initialized');
     Result := nil;
     Exit;
   end;
   
   if not Assigned(adw_toast_overlay_new) then
   begin
-    WriteLn('ОШИБКА: Функция adw_toast_overlay_new не загружена');
+    WriteLn('ERROR: Function adw_toast_overlay_new not loaded');
     Result := nil;
     Exit;
   end;
@@ -889,7 +889,7 @@ begin
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при создании ToastOverlay: ', E.Message);
+      WriteLn('ERROR while creating ToastOverlay: ', E.Message);
       Result := nil;
     end;
   end;
@@ -899,13 +899,13 @@ class procedure TPasGTK4.SetToastOverlayChild(overlay: PAdwToastOverlay; child: 
 begin
   if not FAdwInitialized or (overlay = nil) then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован или overlay = nil');
+    WriteLn('ERROR: LibAdwaita not initialized or overlay = nil');
     Exit;
   end;
   
   if not Assigned(adw_toast_overlay_set_child) then
   begin
-    WriteLn('ОШИБКА: Функция adw_toast_overlay_set_child не загружена');
+    WriteLn('ERROR: Function adw_toast_overlay_set_child not loaded');
     Exit;
   end;
   
@@ -913,7 +913,7 @@ begin
     adw_toast_overlay_set_child(overlay, child);
   except
     on E: Exception do
-      WriteLn('ОШИБКА при установке дочернего элемента ToastOverlay: ', E.Message);
+      WriteLn('ERROR while setting ToastOverlay child: ', E.Message);
   end;
 end;
 
@@ -921,14 +921,14 @@ class function TPasGTK4.CreateToast(const title: string): PAdwToast;
 begin
   if not FAdwInitialized then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован');
+    WriteLn('ERROR: LibAdwaita not initialized');
     Result := nil;
     Exit;
   end;
   
   if not Assigned(adw_toast_new) then
   begin
-    WriteLn('ОШИБКА: Функция adw_toast_new не загружена');
+    WriteLn('ERROR: Function adw_toast_new not loaded');
     Result := nil;
     Exit;
   end;
@@ -938,7 +938,7 @@ begin
   except
     on E: Exception do
     begin
-      WriteLn('ОШИБКА при создании Toast: ', E.Message);
+      WriteLn('ERROR while creating Toast: ', E.Message);
       Result := nil;
     end;
   end;
@@ -948,13 +948,13 @@ class procedure TPasGTK4.ShowToast(overlay: PAdwToastOverlay; toast: PAdwToast);
 begin
   if not FAdwInitialized or (overlay = nil) or (toast = nil) then
   begin
-    WriteLn('ОШИБКА: LibAdwaita не инициализирован или параметры = nil');
+    WriteLn('ERROR: LibAdwaita not initialized or parameters = nil');
     Exit;
   end;
   
   if not Assigned(adw_toast_overlay_add_toast) then
   begin
-    WriteLn('ОШИБКА: Функция adw_toast_overlay_add_toast не загружена');
+    WriteLn('ERROR: Function adw_toast_overlay_add_toast not loaded');
     Exit;
   end;
   
@@ -962,7 +962,7 @@ begin
     adw_toast_overlay_add_toast(overlay, toast);
   except
     on E: Exception do
-      WriteLn('ОШИБКА при показе Toast: ', E.Message);
+      WriteLn('ERROR while showing Toast: ', E.Message);
   end;
 end;
 
@@ -973,7 +973,4 @@ initialization
   TPasGTK4.FAdwInitialized := False;
 
 finalization
-  // Автоматически освобождаем ресурсы при завершении программы
-  TPasGTK4.Finalize;
-
 end.
