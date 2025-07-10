@@ -15,8 +15,8 @@
 # Executables
 *.exe
 *~
-example/example_main
-example/pasgenpass
+example/pasgtk4_example
+
 
 # FreePascal compiled units
 *.ppu
