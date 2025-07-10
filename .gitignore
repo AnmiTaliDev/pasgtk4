@@ -1,0 +1,58 @@
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*~
+example/example_main
+example/pasgenpass
+
+# FreePascal compiled units
+*.ppu
+*.compiled
+
+# Lazarus backup files
+*.lps
+*.lpr.bak
+*.pas.bak
+*.inc.bak
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# IDE files
+.vscode/
+*.code-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build directories
+build/
+dist/
+lib/
+builddir/
+
+# Meson build files
+meson-logs/
+meson-private/
+*.ninja
