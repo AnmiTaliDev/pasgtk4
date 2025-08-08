@@ -46,12 +46,6 @@ meson compile -C builddir
 ./example/example_main --adwaita
 ```
 
-### 3. Compile password generator
-```bash
-fpc -Fu./src example/pasgenpass.pas -oexample/pasgenpass
-./example/pasgenpass
-```
-
 ## Project Structure
 
 ```
