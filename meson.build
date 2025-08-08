@@ -18,7 +18,7 @@ example_target = custom_target('pasgtk4_example',
   command: [
     fpc,
     pascal_args,
-    '-o@OUTPUT@',
+    '-o' + join_paths(meson.current_build_dir(), 'pasgtk4_example'), # Указываем полный путь
     '-Fi' + join_paths(meson.current_source_dir(), 'src'),
     '-Fu' + join_paths(meson.current_source_dir(), 'src'),
     join_paths(meson.current_source_dir(), 'example', 'example_main.pas')

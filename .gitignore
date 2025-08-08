@@ -15,6 +15,7 @@
 # Executables
 *.exe
 *~
+example/example_main
 example/pasgtk4_example
 
 

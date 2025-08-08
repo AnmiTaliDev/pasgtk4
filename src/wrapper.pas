@@ -4,17 +4,19 @@ unit wrapper;
  * PasGTK4 - Pascal bindings for GTK4
  * Copyright (C) 2025 AnmiTaliDev
  * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
  * 
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *}
 
 {$mode objfpc}{$H+}
@@ -53,6 +55,20 @@ type
   PGtkGrid = Pointer;
   PGtkMenuButton = Pointer;
   PGtkPopover = Pointer;
+  PGtkPopoverMenu = Pointer;
+  PGtkHeaderBar = Pointer;
+  PGActionGroup = Pointer;
+  PGSimpleActionGroup = Pointer;
+  PGtkMenuBar = Pointer;
+  PGtkMenu = Pointer;
+  PGtkMenuItem = Pointer;
+  PGtkImageMenuItem = Pointer;
+  PGtkSeparatorMenuItem = Pointer;
+  PGtkCheckMenuItem = Pointer;
+  PGtkRadioMenuItem = Pointer;
+  PGMenuModel = Pointer;
+  PGMenuItem = Pointer;
+  PGSimpleAction = Pointer;
   
   // LibAdwaita types
   PAdwApplication = Pointer;
@@ -85,6 +101,7 @@ type
   // Callback types
   TGtkCallback = procedure(widget: PGtkWidget; data: Pointer); cdecl;
   TGtkApplicationCallback = procedure(app: PGtkApplication; data: Pointer); cdecl;
+  TGActionCallback = procedure(action: Pointer; parameter: Pointer; data: Pointer); cdecl;
   
   // Class for working with GTK4
   TPasGTK4 = class
@@ -127,6 +144,44 @@ type
       c_handler: Pointer; data: Pointer; destroy_data: Pointer; 
       connect_flags: cuint): culong; cdecl;
     class var g_application_run: function(application: Pointer; argc: cint; argv: PPChar): cint; cdecl;
+    
+    // Modern GTK4 functions
+    class var gtk_header_bar_new: function: PGtkHeaderBar; cdecl;
+    class var gtk_header_bar_set_title_widget: procedure(bar: PGtkHeaderBar; title_widget: PGtkWidget); cdecl;
+    class var gtk_header_bar_pack_start: procedure(bar: PGtkHeaderBar; child: PGtkWidget); cdecl;
+    class var gtk_header_bar_pack_end: procedure(bar: PGtkHeaderBar; child: PGtkWidget); cdecl;
+    class var gtk_menu_button_new: function: PGtkMenuButton; cdecl;
+    class var gtk_menu_button_set_popover: procedure(button: PGtkMenuButton; popover: PGtkPopover); cdecl;
+    class var gtk_menu_button_set_menu_model: procedure(button: PGtkMenuButton; menu_model: PGMenuModel); cdecl;
+    class var gtk_popover_menu_new_from_model: function(model: PGMenuModel): PGtkPopoverMenu; cdecl;
+    class var gtk_window_set_titlebar: procedure(window: PGtkWindow; titlebar: PGtkWidget); cdecl;
+    class var g_simple_action_group_new: function: PGSimpleActionGroup; cdecl;
+    class var g_action_map_add_action_entries: procedure(action_map: PGActionGroup; entries: Pointer; n_entries: cint; user_data: Pointer); cdecl;
+    class var gtk_widget_insert_action_group: procedure(widget: PGtkWidget; name: PChar; group: PGActionGroup); cdecl;
+    
+    // Menu functions
+    class var gtk_menu_bar_new: function: PGtkMenuBar; cdecl;
+    class var gtk_menu_new: function: PGtkMenu; cdecl;
+    class var gtk_menu_item_new: function: PGtkMenuItem; cdecl;
+    class var gtk_menu_item_new_with_label: function(label_text: PChar): PGtkMenuItem; cdecl;
+    class var gtk_menu_item_new_with_mnemonic: function(label_text: PChar): PGtkMenuItem; cdecl;
+    class var gtk_image_menu_item_new: function: PGtkImageMenuItem; cdecl;
+    class var gtk_image_menu_item_new_with_label: function(label_text: PChar): PGtkImageMenuItem; cdecl;
+    class var gtk_separator_menu_item_new: function: PGtkSeparatorMenuItem; cdecl;
+    class var gtk_check_menu_item_new: function: PGtkCheckMenuItem; cdecl;
+    class var gtk_check_menu_item_new_with_label: function(label_text: PChar): PGtkCheckMenuItem; cdecl;
+    class var gtk_radio_menu_item_new: function(group: Pointer): PGtkRadioMenuItem; cdecl;
+    class var gtk_radio_menu_item_new_with_label: function(group: Pointer; label_text: PChar): PGtkRadioMenuItem; cdecl;
+    class var gtk_menu_item_set_submenu: procedure(menu_item: PGtkMenuItem; submenu: PGtkWidget); cdecl;
+    class var gtk_menu_shell_append: procedure(menu_shell: Pointer; child: PGtkWidget); cdecl;
+    class var gtk_menu_shell_prepend: procedure(menu_shell: Pointer; child: PGtkWidget); cdecl;
+    class var gtk_check_menu_item_set_active: procedure(check_menu_item: PGtkCheckMenuItem; is_active: gboolean); cdecl;
+    class var gtk_check_menu_item_get_active: function(check_menu_item: PGtkCheckMenuItem): gboolean; cdecl;
+    class var g_menu_new: function: PGMenuModel; cdecl;
+    class var g_menu_append: procedure(menu: PGMenuModel; label_text: PChar; detailed_action: PChar); cdecl;
+    class var g_menu_append_submenu: procedure(menu: PGMenuModel; label_text: PChar; submenu: PGMenuModel); cdecl;
+    class var g_simple_action_new: function(name: PChar; parameter_type: Pointer): PGSimpleAction; cdecl;
+    class var g_action_map_add_action: procedure(action_map: Pointer; action: Pointer); cdecl;
     
     // LibAdwaita functions
     class var adw_init: procedure; cdecl;
@@ -191,13 +246,46 @@ type
     
     // Signals
     class procedure ConnectSignal(widget: PGtkWidget; const signal: string; callback: TGtkCallback; data: Pointer = nil);
+    class procedure ConnectActionSignal(action: Pointer; const signal: string; callback: TGActionCallback; data: Pointer = nil);
+    
+    // Modern GTK4 methods
+    class function CreateHeaderBar: PGtkHeaderBar;
+    class procedure SetHeaderBarTitle(bar: PGtkHeaderBar; title_widget: PGtkWidget);
+    class procedure HeaderBarPackStart(bar: PGtkHeaderBar; child: PGtkWidget);
+    class procedure HeaderBarPackEnd(bar: PGtkHeaderBar; child: PGtkWidget);
+    class function CreateMenuButton: PGtkMenuButton;
+    class procedure SetMenuButtonModel(button: PGtkMenuButton; model: PGMenuModel);
+    class function CreatePopoverMenu(model: PGMenuModel): PGtkPopoverMenu;
+    class procedure SetWindowTitlebar(window: PGtkWindow; titlebar: PGtkWidget);
+    class function CreateSimpleActionGroup: PGSimpleActionGroup;
+    class procedure InsertActionGroup(widget: PGtkWidget; const name: string; group: PGActionGroup);
+    
+    // Menus
+    class function CreateMenuBar: PGtkMenuBar;
+    class function CreateMenu: PGtkMenu;
+    class function CreateMenuItem(const text: string): PGtkMenuItem;
+    class function CreateMenuItemWithMnemonic(const text: string): PGtkMenuItem;
+    class function CreateImageMenuItem(const text: string): PGtkImageMenuItem;
+    class function CreateSeparatorMenuItem: PGtkSeparatorMenuItem;
+    class function CreateCheckMenuItem(const text: string): PGtkCheckMenuItem;
+    class function CreateRadioMenuItem(group: Pointer; const text: string): PGtkRadioMenuItem;
+    class procedure SetMenuItemSubmenu(menu_item: PGtkMenuItem; submenu: PGtkWidget);
+    class procedure AppendToMenuShell(menu_shell: Pointer; item: PGtkWidget);
+    class procedure PrependToMenuShell(menu_shell: Pointer; item: PGtkWidget);
+    class procedure SetCheckMenuItemActive(check_item: PGtkCheckMenuItem; active: Boolean);
+    class function GetCheckMenuItemActive(check_item: PGtkCheckMenuItem): Boolean;
+    class function CreateGMenu: PGMenuModel;
+    class procedure AppendToGMenu(menu: PGMenuModel; const label_text, action: string);
+    class procedure AppendSubmenuToGMenu(menu: PGMenuModel; const label_text: string; submenu: PGMenuModel);
+    class function CreateSimpleAction(const name: string): PGSimpleAction;
+    class procedure AddActionToMap(action_map: Pointer; action: PGSimpleAction);
     
     // LibAdwaita methods
     class function CreateAdwApplication(const app_id: string): PAdwApplication;
     class function CreateAdwWindow(app: PAdwApplication): PAdwApplicationWindow;
     class procedure SetAdwWindowContent(window: PAdwApplicationWindow; content: PGtkWidget);
-    class function CreateHeaderBar: PAdwHeaderBar;
-    class procedure SetHeaderBarTitle(header_bar: PAdwHeaderBar; title_widget: PGtkWidget);
+    class function CreateAdwHeaderBar: PAdwHeaderBar;
+    class procedure SetAdwHeaderBarTitle(header_bar: PAdwHeaderBar; title_widget: PGtkWidget);
     class function CreateToastOverlay: PAdwToastOverlay;
     class procedure SetToastOverlayChild(overlay: PAdwToastOverlay; child: PGtkWidget);
     class function CreateToast(const title: string): PAdwToast;
@@ -326,6 +414,44 @@ begin
   Pointer(gtk_widget_set_margin_end) := GetProcAddr('gtk_widget_set_margin_end');
   Pointer(g_signal_connect_data) := GetProcAddr('g_signal_connect_data');
   Pointer(g_application_run) := GetProcAddr('g_application_run');
+  
+  // Load modern GTK4 function pointers
+  Pointer(gtk_header_bar_new) := GetProcAddr('gtk_header_bar_new');
+  Pointer(gtk_header_bar_set_title_widget) := GetProcAddr('gtk_header_bar_set_title_widget');
+  Pointer(gtk_header_bar_pack_start) := GetProcAddr('gtk_header_bar_pack_start');
+  Pointer(gtk_header_bar_pack_end) := GetProcAddr('gtk_header_bar_pack_end');
+  Pointer(gtk_menu_button_new) := GetProcAddr('gtk_menu_button_new');
+  Pointer(gtk_menu_button_set_popover) := GetProcAddr('gtk_menu_button_set_popover');
+  Pointer(gtk_menu_button_set_menu_model) := GetProcAddr('gtk_menu_button_set_menu_model');
+  Pointer(gtk_popover_menu_new_from_model) := GetProcAddr('gtk_popover_menu_new_from_model');
+  Pointer(gtk_window_set_titlebar) := GetProcAddr('gtk_window_set_titlebar');
+  Pointer(g_simple_action_group_new) := GetProcAddr('g_simple_action_group_new');
+  Pointer(g_action_map_add_action_entries) := GetProcAddr('g_action_map_add_action_entries');
+  Pointer(gtk_widget_insert_action_group) := GetProcAddr('gtk_widget_insert_action_group');
+  
+  // Load menu function pointers
+  Pointer(gtk_menu_bar_new) := GetProcAddr('gtk_menu_bar_new');
+  Pointer(gtk_menu_new) := GetProcAddr('gtk_menu_new');
+  Pointer(gtk_menu_item_new) := GetProcAddr('gtk_menu_item_new');
+  Pointer(gtk_menu_item_new_with_label) := GetProcAddr('gtk_menu_item_new_with_label');
+  Pointer(gtk_menu_item_new_with_mnemonic) := GetProcAddr('gtk_menu_item_new_with_mnemonic');
+  Pointer(gtk_image_menu_item_new) := GetProcAddr('gtk_image_menu_item_new');
+  Pointer(gtk_image_menu_item_new_with_label) := GetProcAddr('gtk_image_menu_item_new_with_label');
+  Pointer(gtk_separator_menu_item_new) := GetProcAddr('gtk_separator_menu_item_new');
+  Pointer(gtk_check_menu_item_new) := GetProcAddr('gtk_check_menu_item_new');
+  Pointer(gtk_check_menu_item_new_with_label) := GetProcAddr('gtk_check_menu_item_new_with_label');
+  Pointer(gtk_radio_menu_item_new) := GetProcAddr('gtk_radio_menu_item_new');
+  Pointer(gtk_radio_menu_item_new_with_label) := GetProcAddr('gtk_radio_menu_item_new_with_label');
+  Pointer(gtk_menu_item_set_submenu) := GetProcAddr('gtk_menu_item_set_submenu');
+  Pointer(gtk_menu_shell_append) := GetProcAddr('gtk_menu_shell_append');
+  Pointer(gtk_menu_shell_prepend) := GetProcAddr('gtk_menu_shell_prepend');
+  Pointer(gtk_check_menu_item_set_active) := GetProcAddr('gtk_check_menu_item_set_active');
+  Pointer(gtk_check_menu_item_get_active) := GetProcAddr('gtk_check_menu_item_get_active');
+  Pointer(g_menu_new) := GetProcAddr('g_menu_new');
+  Pointer(g_menu_append) := GetProcAddr('g_menu_append');
+  Pointer(g_menu_append_submenu) := GetProcAddr('g_menu_append_submenu');
+  Pointer(g_simple_action_new) := GetProcAddr('g_simple_action_new');
+  Pointer(g_action_map_add_action) := GetProcAddr('g_action_map_add_action');
   
   // Check essential functions
   if not (Assigned(gtk_application_new) and 
@@ -513,6 +639,16 @@ begin
     Exit;
   end;
   g_signal_connect_data(app, PChar(signal), Pointer(callback), data, nil, 0);
+end;
+
+class procedure TPasGTK4.ConnectActionSignal(action: Pointer; const signal: string; callback: TGActionCallback; data: Pointer);
+begin
+  if not Assigned(g_signal_connect_data) or not Assigned(callback) or (action = nil) then
+  begin
+    WriteLn('ERROR: Invalid parameters for connecting action signal');
+    Exit;
+  end;
+  g_signal_connect_data(action, PChar(signal), Pointer(callback), data, nil, 0);
 end;
 
 // Windows
@@ -819,7 +955,7 @@ begin
   end;
 end;
 
-class function TPasGTK4.CreateHeaderBar: PAdwHeaderBar;
+class function TPasGTK4.CreateAdwHeaderBar: PAdwHeaderBar;
 begin
   if not FAdwInitialized then
   begin
@@ -846,7 +982,7 @@ begin
   end;
 end;
 
-class procedure TPasGTK4.SetHeaderBarTitle(header_bar: PAdwHeaderBar; title_widget: PGtkWidget);
+class procedure TPasGTK4.SetAdwHeaderBarTitle(header_bar: PAdwHeaderBar; title_widget: PGtkWidget);
 begin
   if not FAdwInitialized or (header_bar = nil) then
   begin
@@ -963,6 +1099,585 @@ begin
   except
     on E: Exception do
       WriteLn('ERROR while showing Toast: ', E.Message);
+  end;
+end;
+
+// Menu methods implementation
+class function TPasGTK4.CreateMenuBar: PGtkMenuBar;
+begin
+  if not Assigned(gtk_menu_bar_new) then
+  begin
+    WriteLn('ERROR: gtk_menu_bar_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_menu_bar_new();
+    if Result = nil then
+      WriteLn('ERROR: gtk_menu_bar_new returned nil')
+    else
+      DebugWriteLn('MenuBar created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating MenuBar: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateMenu: PGtkMenu;
+begin
+  if not Assigned(gtk_menu_new) then
+  begin
+    WriteLn('ERROR: gtk_menu_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_menu_new();
+    if Result = nil then
+      WriteLn('ERROR: gtk_menu_new returned nil')
+    else
+      DebugWriteLn('Menu created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating Menu: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateMenuItem(const text: string): PGtkMenuItem;
+begin
+  if not Assigned(gtk_menu_item_new_with_label) then
+  begin
+    WriteLn('ERROR: gtk_menu_item_new_with_label not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_menu_item_new_with_label(PChar(text));
+    if Result = nil then
+      WriteLn('ERROR: gtk_menu_item_new_with_label returned nil')
+    else
+      DebugWriteLn('MenuItem created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating MenuItem: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateMenuItemWithMnemonic(const text: string): PGtkMenuItem;
+begin
+  if not Assigned(gtk_menu_item_new_with_mnemonic) then
+  begin
+    WriteLn('ERROR: gtk_menu_item_new_with_mnemonic not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_menu_item_new_with_mnemonic(PChar(text));
+    if Result = nil then
+      WriteLn('ERROR: gtk_menu_item_new_with_mnemonic returned nil')
+    else
+      DebugWriteLn('MenuItem with mnemonic created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating MenuItem with mnemonic: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateImageMenuItem(const text: string): PGtkImageMenuItem;
+begin
+  if not Assigned(gtk_image_menu_item_new_with_label) then
+  begin
+    WriteLn('ERROR: gtk_image_menu_item_new_with_label not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_image_menu_item_new_with_label(PChar(text));
+    if Result = nil then
+      WriteLn('ERROR: gtk_image_menu_item_new_with_label returned nil')
+    else
+      DebugWriteLn('ImageMenuItem created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating ImageMenuItem: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateSeparatorMenuItem: PGtkSeparatorMenuItem;
+begin
+  if not Assigned(gtk_separator_menu_item_new) then
+  begin
+    WriteLn('ERROR: gtk_separator_menu_item_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_separator_menu_item_new();
+    if Result = nil then
+      WriteLn('ERROR: gtk_separator_menu_item_new returned nil')
+    else
+      DebugWriteLn('SeparatorMenuItem created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating SeparatorMenuItem: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateCheckMenuItem(const text: string): PGtkCheckMenuItem;
+begin
+  if not Assigned(gtk_check_menu_item_new_with_label) then
+  begin
+    WriteLn('ERROR: gtk_check_menu_item_new_with_label not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_check_menu_item_new_with_label(PChar(text));
+    if Result = nil then
+      WriteLn('ERROR: gtk_check_menu_item_new_with_label returned nil')
+    else
+      DebugWriteLn('CheckMenuItem created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating CheckMenuItem: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateRadioMenuItem(group: Pointer; const text: string): PGtkRadioMenuItem;
+begin
+  if not Assigned(gtk_radio_menu_item_new_with_label) then
+  begin
+    WriteLn('ERROR: gtk_radio_menu_item_new_with_label not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_radio_menu_item_new_with_label(group, PChar(text));
+    if Result = nil then
+      WriteLn('ERROR: gtk_radio_menu_item_new_with_label returned nil')
+    else
+      DebugWriteLn('RadioMenuItem created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating RadioMenuItem: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class procedure TPasGTK4.SetMenuItemSubmenu(menu_item: PGtkMenuItem; submenu: PGtkWidget);
+begin
+  if (menu_item = nil) or not Assigned(gtk_menu_item_set_submenu) then
+  begin
+    WriteLn('ERROR: menu_item = nil or gtk_menu_item_set_submenu not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_menu_item_set_submenu(menu_item, submenu);
+    DebugWriteLn('MenuItem submenu set successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while setting MenuItem submenu: ', E.Message);
+  end;
+end;
+
+class procedure TPasGTK4.AppendToMenuShell(menu_shell: Pointer; item: PGtkWidget);
+begin
+  if (menu_shell = nil) or (item = nil) or not Assigned(gtk_menu_shell_append) then
+  begin
+    WriteLn('ERROR: parameters = nil or gtk_menu_shell_append not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_menu_shell_append(menu_shell, item);
+    DebugWriteLn('Item appended to MenuShell successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while appending to MenuShell: ', E.Message);
+  end;
+end;
+
+class procedure TPasGTK4.PrependToMenuShell(menu_shell: Pointer; item: PGtkWidget);
+begin
+  if (menu_shell = nil) or (item = nil) or not Assigned(gtk_menu_shell_prepend) then
+  begin
+    WriteLn('ERROR: parameters = nil or gtk_menu_shell_prepend not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_menu_shell_prepend(menu_shell, item);
+    DebugWriteLn('Item prepended to MenuShell successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while prepending to MenuShell: ', E.Message);
+  end;
+end;
+
+class procedure TPasGTK4.SetCheckMenuItemActive(check_item: PGtkCheckMenuItem; active: Boolean);
+begin
+  if (check_item = nil) or not Assigned(gtk_check_menu_item_set_active) then
+  begin
+    WriteLn('ERROR: check_item = nil or gtk_check_menu_item_set_active not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_check_menu_item_set_active(check_item, active);
+    DebugWriteLn('CheckMenuItem active state set successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while setting CheckMenuItem active state: ', E.Message);
+  end;
+end;
+
+class function TPasGTK4.GetCheckMenuItemActive(check_item: PGtkCheckMenuItem): Boolean;
+begin
+  Result := False;
+  if (check_item = nil) or not Assigned(gtk_check_menu_item_get_active) then
+  begin
+    WriteLn('ERROR: check_item = nil or gtk_check_menu_item_get_active not loaded');
+    Exit;
+  end;
+  
+  try
+    Result := gtk_check_menu_item_get_active(check_item);
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while getting CheckMenuItem active state: ', E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+class function TPasGTK4.CreateGMenu: PGMenuModel;
+begin
+  if not Assigned(g_menu_new) then
+  begin
+    WriteLn('ERROR: g_menu_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := g_menu_new();
+    if Result = nil then
+      WriteLn('ERROR: g_menu_new returned nil')
+    else
+      DebugWriteLn('GMenu created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating GMenu: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class procedure TPasGTK4.AppendToGMenu(menu: PGMenuModel; const label_text, action: string);
+begin
+  if (menu = nil) or not Assigned(g_menu_append) then
+  begin
+    WriteLn('ERROR: menu = nil or g_menu_append not loaded');
+    Exit;
+  end;
+  
+  try
+    g_menu_append(menu, PChar(label_text), PChar(action));
+    DebugWriteLn('Item appended to GMenu successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while appending to GMenu: ', E.Message);
+  end;
+end;
+
+class procedure TPasGTK4.AppendSubmenuToGMenu(menu: PGMenuModel; const label_text: string; submenu: PGMenuModel);
+begin
+  if (menu = nil) or (submenu = nil) or not Assigned(g_menu_append_submenu) then
+  begin
+    WriteLn('ERROR: parameters = nil or g_menu_append_submenu not loaded');
+    Exit;
+  end;
+  
+  try
+    g_menu_append_submenu(menu, PChar(label_text), submenu);
+    DebugWriteLn('Submenu appended to GMenu successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while appending submenu to GMenu: ', E.Message);
+  end;
+end;
+
+class function TPasGTK4.CreateSimpleAction(const name: string): PGSimpleAction;
+begin
+  if not Assigned(g_simple_action_new) then
+  begin
+    WriteLn('ERROR: g_simple_action_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := g_simple_action_new(PChar(name), nil);
+    if Result = nil then
+      WriteLn('ERROR: g_simple_action_new returned nil')
+    else
+      DebugWriteLn('SimpleAction created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating SimpleAction: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class procedure TPasGTK4.AddActionToMap(action_map: Pointer; action: PGSimpleAction);
+begin
+  if (action_map = nil) or (action = nil) or not Assigned(g_action_map_add_action) then
+  begin
+    WriteLn('ERROR: parameters = nil or g_action_map_add_action not loaded');
+    Exit;
+  end;
+  
+  try
+    g_action_map_add_action(action_map, action);
+    DebugWriteLn('Action added to ActionMap successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while adding Action to ActionMap: ', E.Message);
+  end;
+end;
+
+// Modern GTK4 methods implementation
+class function TPasGTK4.CreateHeaderBar: PGtkHeaderBar;
+begin
+  if not Assigned(gtk_header_bar_new) then
+  begin
+    WriteLn('ERROR: gtk_header_bar_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_header_bar_new();
+    if Result = nil then
+      WriteLn('ERROR: gtk_header_bar_new returned nil')
+    else
+      DebugWriteLn('HeaderBar created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating HeaderBar: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class procedure TPasGTK4.SetHeaderBarTitle(bar: PGtkHeaderBar; title_widget: PGtkWidget);
+begin
+  if (bar = nil) or not Assigned(gtk_header_bar_set_title_widget) then
+  begin
+    WriteLn('ERROR: bar = nil or gtk_header_bar_set_title_widget not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_header_bar_set_title_widget(bar, title_widget);
+    DebugWriteLn('HeaderBar title set successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while setting HeaderBar title: ', E.Message);
+  end;
+end;
+
+class procedure TPasGTK4.HeaderBarPackStart(bar: PGtkHeaderBar; child: PGtkWidget);
+begin
+  if (bar = nil) or (child = nil) or not Assigned(gtk_header_bar_pack_start) then
+  begin
+    WriteLn('ERROR: parameters = nil or gtk_header_bar_pack_start not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_header_bar_pack_start(bar, child);
+    DebugWriteLn('Widget packed to HeaderBar start');
+  except
+    on E: Exception do
+      WriteLn('ERROR while packing to HeaderBar start: ', E.Message);
+  end;
+end;
+
+class procedure TPasGTK4.HeaderBarPackEnd(bar: PGtkHeaderBar; child: PGtkWidget);
+begin
+  if (bar = nil) or (child = nil) or not Assigned(gtk_header_bar_pack_end) then
+  begin
+    WriteLn('ERROR: parameters = nil or gtk_header_bar_pack_end not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_header_bar_pack_end(bar, child);
+    DebugWriteLn('Widget packed to HeaderBar end');
+  except
+    on E: Exception do
+      WriteLn('ERROR while packing to HeaderBar end: ', E.Message);
+  end;
+end;
+
+class function TPasGTK4.CreateMenuButton: PGtkMenuButton;
+begin
+  if not Assigned(gtk_menu_button_new) then
+  begin
+    WriteLn('ERROR: gtk_menu_button_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_menu_button_new();
+    if Result = nil then
+      WriteLn('ERROR: gtk_menu_button_new returned nil')
+    else
+      DebugWriteLn('MenuButton created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating MenuButton: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class procedure TPasGTK4.SetMenuButtonModel(button: PGtkMenuButton; model: PGMenuModel);
+begin
+  if (button = nil) or not Assigned(gtk_menu_button_set_menu_model) then
+  begin
+    WriteLn('ERROR: button = nil or gtk_menu_button_set_menu_model not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_menu_button_set_menu_model(button, model);
+    DebugWriteLn('MenuButton model set successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while setting MenuButton model: ', E.Message);
+  end;
+end;
+
+class function TPasGTK4.CreatePopoverMenu(model: PGMenuModel): PGtkPopoverMenu;
+begin
+  if not Assigned(gtk_popover_menu_new_from_model) then
+  begin
+    WriteLn('ERROR: gtk_popover_menu_new_from_model not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := gtk_popover_menu_new_from_model(model);
+    if Result = nil then
+      WriteLn('ERROR: gtk_popover_menu_new_from_model returned nil')
+    else
+      DebugWriteLn('PopoverMenu created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating PopoverMenu: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class procedure TPasGTK4.SetWindowTitlebar(window: PGtkWindow; titlebar: PGtkWidget);
+begin
+  if (window = nil) or not Assigned(gtk_window_set_titlebar) then
+  begin
+    WriteLn('ERROR: window = nil or gtk_window_set_titlebar not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_window_set_titlebar(window, titlebar);
+    DebugWriteLn('Window titlebar set successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while setting window titlebar: ', E.Message);
+  end;
+end;
+
+class function TPasGTK4.CreateSimpleActionGroup: PGSimpleActionGroup;
+begin
+  if not Assigned(g_simple_action_group_new) then
+  begin
+    WriteLn('ERROR: g_simple_action_group_new not loaded');
+    Result := nil;
+    Exit;
+  end;
+  
+  try
+    Result := g_simple_action_group_new();
+    if Result = nil then
+      WriteLn('ERROR: g_simple_action_group_new returned nil')
+    else
+      DebugWriteLn('SimpleActionGroup created successfully');
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR while creating SimpleActionGroup: ', E.Message);
+      Result := nil;
+    end;
+  end;
+end;
+
+class procedure TPasGTK4.InsertActionGroup(widget: PGtkWidget; const name: string; group: PGActionGroup);
+begin
+  if (widget = nil) or (group = nil) or not Assigned(gtk_widget_insert_action_group) then
+  begin
+    WriteLn('ERROR: parameters = nil or gtk_widget_insert_action_group not loaded');
+    Exit;
+  end;
+  
+  try
+    gtk_widget_insert_action_group(widget, PChar(name), group);
+    DebugWriteLn('ActionGroup inserted to widget successfully');
+  except
+    on E: Exception do
+      WriteLn('ERROR while inserting ActionGroup: ', E.Message);
   end;
 end;
 

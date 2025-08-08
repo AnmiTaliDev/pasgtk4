@@ -1,780 +1,383 @@
 program example_main;
 
-{*
+{
  * PasGTK4 - Pascal bindings for GTK4
  * Example Application
  * Copyright (C) 2025 AnmiTaliDev
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *}
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+}
 
 {$mode objfpc}{$H+}
-
-// Conditional compilation for debug output
-{$IFDEF DEBUG}
-  {$DEFINE ENABLE_DEBUG_OUTPUT}
-{$ENDIF}
 
 uses
   SysUtils, main, wrapper;
 
-
 type
-  { TExampleApp - Demo application }
-  TExampleApp = class(TGTKSimpleWindow)
+  TDemoApp = class;
+  TCompatApp = class;
+  TAdwaitaApp = class;
+
+{------------------------------------------------------------------------------}
+{ Common Logic Procedures                                                      }
+{------------------------------------------------------------------------------}
+// These procedures contain the shared UI logic to avoid code duplication
+// across different application classes (Modern, Compat, Adwaita).
+
+procedure HandleButtonClick(StatusLabel: PGtkLabel; var ClickCount: Integer);
+begin
+  Inc(ClickCount);
+  TPasGTK4.SetLabelText(StatusLabel, 'Clicked ' + IntToStr(ClickCount) + ' times!');
+end;
+
+procedure HandleFileNew(ContentEntry, StatusLabel: PGtkWidget);
+begin
+  TPasGTK4.SetEntryText(PGtkEntry(ContentEntry), '');
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'New file created');
+end;
+
+procedure HandleFileOpen(StatusLabel: PGtkWidget);
+begin
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'File open dialog would appear');
+end;
+
+procedure HandleFileSave(ContentEntry, StatusLabel: PGtkWidget);
+var
+  text: string;
+begin
+  text := TPasGTK4.GetEntryText(PGtkEntry(ContentEntry));
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'Saved: ' + IntToStr(Length(text)) + ' characters');
+end;
+
+procedure HandleFileExit(StatusLabel: PGtkWidget);
+begin
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'Goodbye!');
+  // NOTE: Halt is used because a clean application exit function (like GApplication.Quit)
+  // is not exposed in the current wrapper. In a real app, you would close the main window
+  // or call the application quit method.
+  Halt(0);
+end;
+
+procedure HandleEditCut(ContentEntry, StatusLabel: PGtkWidget);
+var
+  text: string;
+begin
+  text := TPasGTK4.GetEntryText(PGtkEntry(ContentEntry));
+  TPasGTK4.SetEntryText(PGtkEntry(ContentEntry), '');
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'Cut: "' + text + '"');
+end;
+
+procedure HandleEditCopy(ContentEntry, StatusLabel: PGtkWidget);
+var
+  text: string;
+begin
+  text := TPasGTK4.GetEntryText(PGtkEntry(ContentEntry));
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'Copied: "' + text + '"');
+end;
+
+procedure HandleEditPaste(ContentEntry, StatusLabel: PGtkWidget);
+begin
+  TPasGTK4.SetEntryText(PGtkEntry(ContentEntry), 'Pasted text');
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'Text pasted');
+end;
+
+procedure HandleHelpAbout(StatusLabel: PGtkWidget);
+begin
+  TPasGTK4.SetLabelText(PGtkLabel(StatusLabel), 'PasGTK4 Demo - Modern Pascal GTK4 Bindings');
+end;
+
+
+{------------------------------------------------------------------------------}
+{ TDemoApp - Modern GTK4 application with HeaderBar                            }
+{------------------------------------------------------------------------------}
+type
+  TDemoApp = class(TGTKModernWindow)
   private
+    FStatusLabel: PGtkLabel;
+    FContentEntry: PGtkEntry;
     FClickCount: Integer;
-    FNameEntry: PGtkEntry;
-    FResultLabel: PGtkLabel;
-    FCounterLabel: PGtkLabel;
-    
   public
     constructor Create;
     procedure SetupWindow; override;
-    
-    // Event handlers
-    procedure OnButtonClick(widget: PGtkWidget; data: Pointer);
-    procedure OnGreetClick(widget: PGtkWidget; data: Pointer);
-    procedure OnClearClick(widget: PGtkWidget; data: Pointer);
+
+    // Action handlers
+    procedure DoFileNew;   procedure DoFileOpen;  procedure DoFileSave;
+    procedure DoFileExit;  procedure DoEditCut;   procedure DoEditCopy;
+    procedure DoEditPaste; procedure DoHelpAbout; procedure DoButtonClick;
   end;
-  
-  { TAdwaitaExampleApp - Modern application with LibAdwaita }
-  TAdwaitaExampleApp = class
+
+// cdecl callbacks that forward calls to the TDemoApp instance
+procedure modern_callback_file_new(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoFileNew; end;
+procedure modern_callback_file_open(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoFileOpen; end;
+procedure modern_callback_file_save(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoFileSave; end;
+procedure modern_callback_file_exit(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoFileExit; end;
+procedure modern_callback_edit_cut(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoEditCut; end;
+procedure modern_callback_edit_copy(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoEditCopy; end;
+procedure modern_callback_edit_paste(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoEditPaste; end;
+procedure modern_callback_help_about(a: Pointer; p: Pointer; d: Pointer); cdecl; begin TDemoApp(d).DoHelpAbout; end;
+procedure modern_callback_button_click(w: PGtkWidget; d: Pointer); cdecl; begin TDemoApp(d).DoButtonClick; end;
+
+constructor TDemoApp.Create;
+begin
+  inherited Create('com.anmitalidev.pasgtk4.demo');
+  FClickCount := 0;
+  Title := 'PasGTK4 Demo';
+  Width := 600;
+  Height := 400;
+end;
+
+procedure TDemoApp.SetupWindow;
+var
+  file_menu, edit_menu, help_menu: PGMenuModel;
+begin
+  inherited SetupWindow;
+
+  // Create menus
+  file_menu := CreateHeaderBarMenu('File');
+  AddMenuAction(file_menu, 'New', 'file-new', @modern_callback_file_new, Self);
+  AddMenuAction(file_menu, 'Open', 'file-open', @modern_callback_file_open, Self);
+  AddMenuAction(file_menu, 'Save', 'file-save', @modern_callback_file_save, Self);
+  AddMenuAction(file_menu, 'Exit', 'file-exit', @modern_callback_file_exit, Self);
+
+  edit_menu := CreateHeaderBarMenu('Edit');
+  AddMenuAction(edit_menu, 'Cut', 'edit-cut', @modern_callback_edit_cut, Self);
+  AddMenuAction(edit_menu, 'Copy', 'edit-copy', @modern_callback_edit_copy, Self);
+  AddMenuAction(edit_menu, 'Paste', 'edit-paste', @modern_callback_edit_paste, Self);
+
+  help_menu := CreateHeaderBarMenu('Help');
+  AddMenuAction(help_menu, 'About', 'help-about', @modern_callback_help_about, Self);
+
+  // Add content
+  AddLabel('Welcome to PasGTK4!');
+  AddLabel('Modern GTK4 with HeaderBar and PopoverMenu');
+  AddLabel('');
+  AddButton('Click me!', @modern_callback_button_click, Self);
+  AddLabel('');
+  FContentEntry := AddEntry('Type something...');
+  FStatusLabel := AddLabel('Ready');
+  TPasGTK4.SetLabelJustify(FStatusLabel, GTK_JUSTIFY_CENTER);
+end;
+
+procedure TDemoApp.DoFileNew;   begin HandleFileNew(PGtkWidget(FContentEntry), PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoFileOpen;  begin HandleFileOpen(PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoFileSave;  begin HandleFileSave(PGtkWidget(FContentEntry), PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoFileExit;  begin HandleFileExit(PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoEditCut;   begin HandleEditCut(PGtkWidget(FContentEntry), PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoEditCopy;  begin HandleEditCopy(PGtkWidget(FContentEntry), PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoEditPaste; begin HandleEditPaste(PGtkWidget(FContentEntry), PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoHelpAbout; begin HandleHelpAbout(PGtkWidget(FStatusLabel)); end;
+procedure TDemoApp.DoButtonClick; begin HandleButtonClick(FStatusLabel, FClickCount); end;
+
+
+{------------------------------------------------------------------------------}
+{ TCompatApp - Compatibility mode with traditional menus                       }
+{------------------------------------------------------------------------------}
+type
+  TCompatApp = class(TGTKMenuWindow)
+  private
+    FStatusLabel: PGtkLabel;
+    FContentEntry: PGtkEntry;
+    FClickCount: Integer;
+  public
+    constructor Create;
+    procedure SetupWindow; override;
+
+    // Action handlers
+    procedure DoFileNew;   procedure DoFileExit;
+    procedure DoEditCopy;  procedure DoHelpAbout;
+    procedure DoButtonClick;
+  end;
+
+// cdecl callbacks that forward calls to the TCompatApp instance
+procedure compat_callback_file_new(w: PGtkWidget; d: Pointer); cdecl;   begin TCompatApp(d).DoFileNew; end;
+procedure compat_callback_file_exit(w: PGtkWidget; d: Pointer); cdecl;  begin TCompatApp(d).DoFileExit; end;
+procedure compat_callback_edit_copy(w: PGtkWidget; d: Pointer); cdecl;  begin TCompatApp(d).DoEditCopy; end;
+procedure compat_callback_help_about(w: PGtkWidget; d: Pointer); cdecl; begin TCompatApp(d).DoHelpAbout; end;
+procedure compat_callback_button_click(w: PGtkWidget; d: Pointer); cdecl; begin TCompatApp(d).DoButtonClick; end;
+
+constructor TCompatApp.Create;
+begin
+  inherited Create('com.anmitalidev.pasgtk4.compat');
+  FClickCount := 0;
+  Title := 'PasGTK4 Compatibility Mode';
+  Width := 500;
+  Height := 350;
+end;
+
+procedure TCompatApp.SetupWindow;
+var
+  file_menu, edit_menu, help_menu: PGMenuModel;
+begin
+  inherited SetupWindow;
+
+  // Create traditional menus (simulated with buttons as per library capability)
+  file_menu := CreateMenu('File');
+  AddWidget(AddMenuItem(file_menu, 'New', @compat_callback_file_new, Self));
+  AddWidget(AddMenuItem(file_menu, 'Exit', @compat_callback_file_exit, Self));
+
+  edit_menu := CreateMenu('Edit');
+  AddWidget(AddMenuItem(edit_menu, 'Copy', @compat_callback_edit_copy, Self));
+
+  help_menu := CreateMenu('Help');
+  AddWidget(AddMenuItem(help_menu, 'About', @compat_callback_help_about, Self));
+
+  // Add content
+  AddLabel('GTK4 Compatibility Mode');
+  AddLabel('');
+  AddButton('Click me!', @compat_callback_button_click, Self);
+  AddLabel('');
+  FContentEntry := AddEntry('Type something...');
+  FStatusLabel := AddLabel('Ready');
+end;
+
+procedure TCompatApp.DoFileNew;   begin HandleFileNew(PGtkWidget(FContentEntry), PGtkWidget(FStatusLabel)); end;
+procedure TCompatApp.DoFileExit;  begin HandleFileExit(PGtkWidget(FStatusLabel)); end;
+procedure TCompatApp.DoEditCopy;  begin HandleEditCopy(PGtkWidget(FContentEntry), PGtkWidget(FStatusLabel)); end;
+procedure TCompatApp.DoHelpAbout; begin HandleHelpAbout(PGtkWidget(FStatusLabel)); end;
+procedure TCompatApp.DoButtonClick; begin HandleButtonClick(FStatusLabel, FClickCount); end;
+
+
+{------------------------------------------------------------------------------}
+{ TAdwaitaApp - LibAdwaita application                                         }
+{------------------------------------------------------------------------------}
+type
+  TAdwaitaApp = class
   private
     FApp: PAdwApplication;
     FWindow: PAdwApplicationWindow;
-    FHeaderBar: PAdwHeaderBar;
-    FToastOverlay: PAdwToastOverlay;
-    FMainBox: PGtkBox;
+    FStatusLabel: PGtkLabel;
     FClickCount: Integer;
-    FNameEntry: PGtkEntry;
-    FResultLabel: PGtkLabel;
-    FCounterLabel: PGtkLabel;
-    
   public
     constructor Create;
     destructor Destroy; override;
-    
-    procedure SetupWindow;
     function Run: Integer;
-    
-    // Event handlers
     procedure OnActivate(app: PAdwApplication; data: Pointer);
-    procedure OnButtonClick(widget: PGtkWidget; data: Pointer);
-    procedure OnGreetClick(widget: PGtkWidget; data: Pointer);
-    procedure OnClearClick(widget: PGtkWidget; data: Pointer);
-    procedure OnToastClick(widget: PGtkWidget; data: Pointer);
+    procedure DoButtonClick;
   end;
 
-// Global callback functions for event handling
-procedure button_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
-var
-  app: TExampleApp;
-begin
-  try
-    if (data = nil) or (widget = nil) then
-    begin
-      WriteLn('WARNING: button_click_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      app := TExampleApp(data);
-      if app <> nil then
-        app.OnButtonClick(widget, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in button_click_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in button_click_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in button_click_callback: ', E.Message);
-  end;
-end;
+// cdecl callbacks that forward calls to the TAdwaitaApp instance
+procedure adwaita_callback_activate(app: PAdwApplication; d: Pointer); cdecl; begin TAdwaitaApp(d).OnActivate(app, d); end;
+procedure adwaita_callback_button_click(w: PGtkWidget; d: Pointer); cdecl; begin TAdwaitaApp(d).DoButtonClick; end;
 
-procedure greet_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
-var
-  app: TExampleApp;
-begin
-  try
-    if (data = nil) or (widget = nil) then
-    begin
-      WriteLn('WARNING: greet_click_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      app := TExampleApp(data);
-      if app <> nil then
-        app.OnGreetClick(widget, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in greet_click_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in greet_click_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in greet_click_callback: ', E.Message);
-  end;
-end;
-
-procedure clear_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
-var
-  app: TExampleApp;
-begin
-  try
-    if (data = nil) or (widget = nil) then
-    begin
-      WriteLn('WARNING: clear_click_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      app := TExampleApp(data);
-      if app <> nil then
-        app.OnClearClick(widget, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in clear_click_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in clear_click_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in clear_click_callback: ', E.Message);
-  end;
-end;
-
-// Adwaita callback functions
-procedure adw_app_activate_callback(app: PAdwApplication; data: Pointer); cdecl;
-var
-  adw_app: TAdwaitaExampleApp;
-begin
-  try
-    if (data = nil) or (app = nil) then
-    begin
-      WriteLn('WARNING: adw_app_activate_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      adw_app := TAdwaitaExampleApp(data);
-      if adw_app <> nil then
-        adw_app.OnActivate(app, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in adw_app_activate_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in adw_app_activate_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in adw_app_activate_callback: ', E.Message);
-  end;
-end;
-
-procedure adw_button_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
-var
-  app: TAdwaitaExampleApp;
-begin
-  try
-    if (data = nil) or (widget = nil) then
-    begin
-      WriteLn('WARNING: adw_button_click_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      app := TAdwaitaExampleApp(data);
-      if app <> nil then
-        app.OnButtonClick(widget, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in adw_button_click_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in adw_button_click_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in adw_button_click_callback: ', E.Message);
-  end;
-end;
-
-procedure adw_greet_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
-var
-  app: TAdwaitaExampleApp;
-begin
-  try
-    if (data = nil) or (widget = nil) then
-    begin
-      WriteLn('WARNING: adw_greet_click_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      app := TAdwaitaExampleApp(data);
-      if app <> nil then
-        app.OnGreetClick(widget, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in adw_greet_click_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in adw_greet_click_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in adw_greet_click_callback: ', E.Message);
-  end;
-end;
-
-procedure adw_clear_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
-var
-  app: TAdwaitaExampleApp;
-begin
-  try
-    if (data = nil) or (widget = nil) then
-    begin
-      WriteLn('WARNING: adw_clear_click_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      app := TAdwaitaExampleApp(data);
-      if app <> nil then
-        app.OnClearClick(widget, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in adw_clear_click_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in adw_clear_click_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in adw_clear_click_callback: ', E.Message);
-  end;
-end;
-
-procedure adw_toast_click_callback(widget: PGtkWidget; data: Pointer); cdecl;
-var
-  app: TAdwaitaExampleApp;
-begin
-  try
-    if (data = nil) or (widget = nil) then
-    begin
-      WriteLn('WARNING: adw_toast_click_callback called with nil parameters');
-      Exit;
-    end;
-    
-    // Safe type checking through try-except
-    try
-      app := TAdwaitaExampleApp(data);
-      if app <> nil then
-        app.OnToastClick(widget, data)
-      else
-        WriteLn('ERROR: Invalid application pointer in adw_toast_click_callback');
-    except
-      on E: Exception do
-        WriteLn('ERROR: Invalid type cast in adw_toast_click_callback: ', E.Message);
-    end;
-  except
-    on E: Exception do
-      WriteLn('CRITICAL ERROR in adw_toast_click_callback: ', E.Message);
-  end;
-end;
-
-
-{ TExampleApp }
-
-constructor TExampleApp.Create;
-begin
-  inherited Create('com.anmitalidev.pasgtk4.example');
-  
-  FClickCount := 0;
-  FNameEntry := nil;
-  FResultLabel := nil;
-  FCounterLabel := nil;
-  
-  // Window settings
-  Title := 'PasGTK4 Example Application';
-  Width := 400;
-  Height := 300;
-end;
-
-procedure TExampleApp.SetupWindow;
-var
-  separator_box: PGtkBox;
-  button_box: PGtkBox;
-  greet_button: PGtkButton;
-  clear_button: PGtkButton;
-begin
-  // Call base setup
-  inherited SetupWindow;
-  
-  // Add title
-  AddLabel('Welcome to PasGTK4!');
-  
-  // Create separator
-  separator_box := TPasGTK4.CreateHorizontalBox(0);
-  TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 10, 0, 10);
-  AddWidget(PGtkWidget(separator_box));
-  
-  // Click counter
-  FCounterLabel := AddLabel('Clicks: 0');
-  TPasGTK4.SetLabelJustify(FCounterLabel, GTK_JUSTIFY_CENTER);
-  
-  // Button for counting clicks
-  AddButton('Click me!', @button_click_callback, Self);
-  
-  // Separator
-  separator_box := TPasGTK4.CreateHorizontalBox(0);
-  TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 10, 0, 10);
-  AddWidget(PGtkWidget(separator_box));
-  
-  // Name input field
-  AddLabel('Enter your name:');
-  FNameEntry := AddEntry('Your name');
-  
-  // Result label
-  FResultLabel := AddLabel('');
-  TPasGTK4.SetLabelJustify(FResultLabel, GTK_JUSTIFY_CENTER);
-  
-  // Button container
-  button_box := TPasGTK4.CreateHorizontalBox(5);
-  TPasGTK4.SetWidgetMargins(PGtkWidget(button_box), 0, 10, 0, 0);
-  AddWidget(PGtkWidget(button_box));
-  
-  // Create action buttons separately
-  greet_button := TPasGTK4.CreateButton('Greet');
-  TPasGTK4.ConnectSignal(PGtkWidget(greet_button), 'clicked', @greet_click_callback, Self);
-  TPasGTK4.AddToBox(button_box, PGtkWidget(greet_button));
-  
-  clear_button := TPasGTK4.CreateButton('Clear');
-  TPasGTK4.ConnectSignal(PGtkWidget(clear_button), 'clicked', @clear_click_callback, Self);
-  TPasGTK4.AddToBox(button_box, PGtkWidget(clear_button));
-end;
-
-procedure TExampleApp.OnButtonClick(widget: PGtkWidget; data: Pointer);
-begin
-  // Check if widget is created
-  if FCounterLabel = nil then
-  begin
-    WriteLn('ERROR: FCounterLabel not created');
-    Exit;
-  end;
-  
-  Inc(FClickCount);
-  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: ' + IntToStr(FClickCount));
-  
-  WriteLn('Button clicked! Total clicks: ', FClickCount);
-end;
-
-procedure TExampleApp.OnGreetClick(widget: PGtkWidget; data: Pointer);
-var
-  name: string;
-  greeting: string;
-begin
-{$IFDEF ENABLE_DEBUG_OUTPUT}
-  WriteLn('[DEBUG] FNameEntry = ', PtrUInt(FNameEntry));
-{$ENDIF}
-  
-  // Check if widgets are created
-  if FNameEntry = nil then
-  begin
-    WriteLn('ERROR: FNameEntry not created');
-    Exit;
-  end;
-  
-  if FResultLabel = nil then
-  begin
-    WriteLn('ERROR: FResultLabel not created');
-    Exit;
-  end;
-  
-  name := TPasGTK4.GetEntryText(FNameEntry);
-  
-  if Trim(name) = '' then
-    greeting := 'Hello, stranger!'
-  else
-    greeting := 'Hello, ' + name + '! Welcome to PasGTK4!';
-  
-  TPasGTK4.SetLabelText(FResultLabel, greeting);
-  
-  WriteLn('Greeting: ', greeting);
-end;
-
-procedure TExampleApp.OnClearClick(widget: PGtkWidget; data: Pointer);
-begin
-  // Check if widgets are created
-  if FNameEntry = nil then
-  begin
-    WriteLn('ERROR: FNameEntry not created');
-    Exit;
-  end;
-  
-  if FResultLabel = nil then
-  begin
-    WriteLn('ERROR: FResultLabel not created');
-    Exit;
-  end;
-  
-  if FCounterLabel = nil then
-  begin
-    WriteLn('ERROR: FCounterLabel not created');
-    Exit;
-  end;
-  
-  TPasGTK4.SetEntryText(FNameEntry, '');
-  TPasGTK4.SetLabelText(FResultLabel, '');
-  FClickCount := 0;
-  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: 0');
-  
-  WriteLn('Data cleared');
-end;
-
-{ TAdwaitaExampleApp }
-
-constructor TAdwaitaExampleApp.Create;
+constructor TAdwaitaApp.Create;
 begin
   inherited Create;
-  
+  FApp := TPasGTK4.CreateAdwApplication('com.anmitalidev.pasgtk4.adwaita');
   FClickCount := 0;
-  FApp := nil;
-  FWindow := nil;
-  FHeaderBar := nil;
-  FToastOverlay := nil;
-  FMainBox := nil;
-  FNameEntry := nil;
-  FResultLabel := nil;
-  FCounterLabel := nil;
-  
-  // Create Adwaita application
-  FApp := TPasGTK4.CreateAdwApplication('com.anmitalidev.pasgtk4.adwaita-example');
-  if FApp = nil then
-    raise Exception.Create('Failed to create Adwaita application');
-  
-  // Connect activation handler
-  TPasGTK4.ConnectApplicationSignal(PGtkApplication(FApp), 'activate', @adw_app_activate_callback, Self);
+  TPasGTK4.ConnectApplicationSignal(PGtkApplication(FApp), 'activate', @adwaita_callback_activate, Self);
 end;
 
-destructor TAdwaitaExampleApp.Destroy;
+destructor TAdwaitaApp.Destroy;
 begin
   inherited Destroy;
 end;
 
-procedure TAdwaitaExampleApp.OnActivate(app: PAdwApplication; data: Pointer);
+procedure TAdwaitaApp.OnActivate(app: PAdwApplication; data: Pointer);
+var
+  header_bar: PAdwHeaderBar;
+  title_label: PGtkLabel;
+  button: PGtkButton;
+  main_box: PGtkBox;
 begin
-  // Create Adwaita window
   FWindow := TPasGTK4.CreateAdwWindow(FApp);
-  if FWindow = nil then
-  begin
-    WriteLn('ERROR: Failed to create Adwaita window');
-    Exit;
-  end;
-  
-  // Set window size
-  TPasGTK4.SetWindowSize(PGtkWindow(FWindow), 500, 400);
-  
-  // Setup interface
-  SetupWindow;
-  
-  // Show window
+  TPasGTK4.SetWindowSize(PGtkWindow(FWindow), 500, 300);
+
+  // Create HeaderBar
+  header_bar := TPasGTK4.CreateAdwHeaderBar;
+  title_label := TPasGTK4.CreateLabel('PasGTK4 + LibAdwaita');
+  TPasGTK4.SetAdwHeaderBarTitle(header_bar, PGtkWidget(title_label));
+
+  // Create main content
+  main_box := TPasGTK4.CreateVerticalBox(12);
+  TPasGTK4.SetWidgetMargins(PGtkWidget(main_box), 24, 24, 24, 24);
+
+  TPasGTK4.AddToBox(main_box, PGtkWidget(TPasGTK4.CreateLabel('Welcome to LibAdwaita!')));
+  button := TPasGTK4.CreateButton('Click me!');
+  TPasGTK4.ConnectSignal(PGtkWidget(button), 'clicked', @adwaita_callback_button_click, Self);
+  TPasGTK4.AddToBox(main_box, PGtkWidget(button));
+  FStatusLabel := TPasGTK4.CreateLabel('Ready');
+  TPasGTK4.AddToBox(main_box, PGtkWidget(FStatusLabel));
+
+  TPasGTK4.SetAdwWindowContent(FWindow, PGtkWidget(main_box));
   TPasGTK4.ShowWindow(PGtkWindow(FWindow));
 end;
 
-procedure TAdwaitaExampleApp.SetupWindow;
-var
-  title_label: PGtkLabel;
-  separator_box: PGtkBox;
-  button_box: PGtkBox;
-  greet_button: PGtkButton;
-  clear_button: PGtkButton;
-  toast_button: PGtkButton;
-  click_button: PGtkButton;
-begin
-  // Create HeaderBar (modern title bar)
-  FHeaderBar := TPasGTK4.CreateHeaderBar;
-  
-  // Create ToastOverlay (for notifications)
-  FToastOverlay := TPasGTK4.CreateToastOverlay;
-  if FToastOverlay = nil then
-  begin
-    WriteLn('ERROR: Failed to create ToastOverlay');
-    Exit;
-  end;
-  
-  // Create main container
-  FMainBox := TPasGTK4.CreateVerticalBox(12);
-  TPasGTK4.SetWidgetMargins(PGtkWidget(FMainBox), 24, 24, 24, 24);
-  
-  // Set main container in ToastOverlay
-  TPasGTK4.SetToastOverlayChild(FToastOverlay, PGtkWidget(FMainBox));
-  
-  // If there's HeaderBar, create title
-  if FHeaderBar <> nil then
-  begin
-    title_label := TPasGTK4.CreateLabel('PasGTK4 with LibAdwaita');
-    TPasGTK4.SetHeaderBarTitle(FHeaderBar, PGtkWidget(title_label));
-  end;
-  
-  // Set window content (for AdwApplicationWindow)
-  TPasGTK4.SetAdwWindowContent(FWindow, PGtkWidget(FToastOverlay));
-  
-  // Add welcome text
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(TPasGTK4.CreateLabel('Welcome to modern PasGTK4!')));
-  
-  // Create separator
-  separator_box := TPasGTK4.CreateHorizontalBox(0);
-  TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 12, 0, 12);
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(separator_box));
-  
-  // Click counter
-  FCounterLabel := TPasGTK4.CreateLabel('Clicks: 0');
-  TPasGTK4.SetLabelJustify(FCounterLabel, GTK_JUSTIFY_CENTER);
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(FCounterLabel));
-  
-  // Button for counting clicks
-  click_button := TPasGTK4.CreateButton('Click me!');
-  TPasGTK4.ConnectSignal(PGtkWidget(click_button), 'clicked', @adw_button_click_callback, Self);
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(click_button));
-  
-  // Separator
-  separator_box := TPasGTK4.CreateHorizontalBox(0);
-  TPasGTK4.SetWidgetMargins(PGtkWidget(separator_box), 0, 12, 0, 12);
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(separator_box));
-  
-  // Name input field
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(TPasGTK4.CreateLabel('Enter your name:')));
-  FNameEntry := TPasGTK4.CreateEntry;
-  TPasGTK4.SetEntryPlaceholder(FNameEntry, 'Your name');
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(FNameEntry));
-  
-  // Result label
-  FResultLabel := TPasGTK4.CreateLabel('');
-  TPasGTK4.SetLabelJustify(FResultLabel, GTK_JUSTIFY_CENTER);
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(FResultLabel));
-  
-  // Button container
-  button_box := TPasGTK4.CreateHorizontalBox(8);
-  TPasGTK4.SetWidgetMargins(PGtkWidget(button_box), 0, 12, 0, 0);
-  TPasGTK4.AddToBox(FMainBox, PGtkWidget(button_box));
-  
-  // Create action buttons
-  greet_button := TPasGTK4.CreateButton('Greet');
-  TPasGTK4.ConnectSignal(PGtkWidget(greet_button), 'clicked', @adw_greet_click_callback, Self);
-  TPasGTK4.AddToBox(button_box, PGtkWidget(greet_button));
-  
-  clear_button := TPasGTK4.CreateButton('Clear');
-  TPasGTK4.ConnectSignal(PGtkWidget(clear_button), 'clicked', @adw_clear_click_callback, Self);
-  TPasGTK4.AddToBox(button_box, PGtkWidget(clear_button));
-  
-  toast_button := TPasGTK4.CreateButton('Toast');
-  TPasGTK4.ConnectSignal(PGtkWidget(toast_button), 'clicked', @adw_toast_click_callback, Self);
-  TPasGTK4.AddToBox(button_box, PGtkWidget(toast_button));
-end;
-
-function TAdwaitaExampleApp.Run: Integer;
+function TAdwaitaApp.Run: Integer;
 begin
   Result := TPasGTK4.RunApplication(PGtkApplication(FApp));
 end;
 
-procedure TAdwaitaExampleApp.OnButtonClick(widget: PGtkWidget; data: Pointer);
+procedure TAdwaitaApp.DoButtonClick;
 begin
-  // Check if widget is created
-  if FCounterLabel = nil then
-  begin
-    WriteLn('ERROR: FCounterLabel not created');
-    Exit;
-  end;
-  
-  Inc(FClickCount);
-  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: ' + IntToStr(FClickCount));
-  WriteLn('Button clicked! Total clicks: ', FClickCount);
+  HandleButtonClick(FStatusLabel, FClickCount);
 end;
 
-procedure TAdwaitaExampleApp.OnGreetClick(widget: PGtkWidget; data: Pointer);
+
+{------------------------------------------------------------------------------}
+{ Main Program                                                                 }
+{------------------------------------------------------------------------------}
 var
-  name: string;
-  greeting: string;
-begin
-  // Check if widgets are created
-  if FNameEntry = nil then
-  begin
-    WriteLn('ERROR: FNameEntry not created');
-    Exit;
-  end;
-  
-  if FResultLabel = nil then
-  begin
-    WriteLn('ERROR: FResultLabel not created');
-    Exit;
-  end;
-  
-  name := TPasGTK4.GetEntryText(FNameEntry);
-  
-  if Trim(name) = '' then
-    greeting := 'Hello, stranger!'
-  else
-    greeting := 'Hello, ' + name + '! Welcome to modern PasGTK4!';
-  
-  TPasGTK4.SetLabelText(FResultLabel, greeting);
-  WriteLn('Greeting: ', greeting);
-end;
-
-procedure TAdwaitaExampleApp.OnClearClick(widget: PGtkWidget; data: Pointer);
-begin
-  // Check if widgets are created
-  if FNameEntry = nil then
-  begin
-    WriteLn('ERROR: FNameEntry not created');
-    Exit;
-  end;
-  
-  if FResultLabel = nil then
-  begin
-    WriteLn('ERROR: FResultLabel not created');
-    Exit;
-  end;
-  
-  if FCounterLabel = nil then
-  begin
-    WriteLn('ERROR: FCounterLabel not created');
-    Exit;
-  end;
-  
-  TPasGTK4.SetEntryText(FNameEntry, '');
-  TPasGTK4.SetLabelText(FResultLabel, '');
-  FClickCount := 0;
-  TPasGTK4.SetLabelText(FCounterLabel, 'Clicks: 0');
-  WriteLn('Data cleared');
-end;
-
-procedure TAdwaitaExampleApp.OnToastClick(widget: PGtkWidget; data: Pointer);
-var
-  toast: PAdwToast;
-begin
-  // Check if ToastOverlay is created
-  if FToastOverlay = nil then
-  begin
-    WriteLn('ERROR: FToastOverlay not created');
-    Exit;
-  end;
-  
-  toast := TPasGTK4.CreateToast('Modern LibAdwaita notification!');
-  if toast = nil then
-  begin
-    WriteLn('ERROR: Failed to create Toast');
-    Exit;
-  end;
-  
-  TPasGTK4.ShowToast(FToastOverlay, toast);
-  WriteLn('Toast notification shown');
-end;
-
-var
-  app: TExampleApp;
-  adw_app: TAdwaitaExampleApp;
+  app: TObject;
   result_code: Integer;
-  use_adwaita: Boolean;
+  use_compat, use_adwaita: Boolean;
 
 begin
   WriteLn('PasGTK4 Example Application');
   WriteLn('Version: ', GetPasGTK4Version);
-  WriteLn('Author: AnmiTaliDev');
-  WriteLn('License: Apache 2.0');
   WriteLn('---');
-  
-  // Check command line parameters
+
+  // Check mode
+  use_compat := (ParamCount > 0) and (ParamStr(1) = '--compat');
   use_adwaita := (ParamCount > 0) and (ParamStr(1) = '--adwaita');
-  
-  if use_adwaita then
-  begin
-    WriteLn('Mode: LibAdwaita (modern GNOME design)');
-    WriteLn('');
-    
-    // Initialize PasGTK4 with LibAdwaita
-    if not InitializePasGTK4WithAdwaita then
+
+  app := nil;
+  result_code := 0;
+
+  try
+    if use_compat then
     begin
-      WriteLn('ERROR: Failed to initialize PasGTK4 with LibAdwaita');
-      WriteLn('Make sure GTK4 and LibAdwaita are installed on your system');
-      Halt(1);
-    end;
-    
-    WriteLn('PasGTK4 with LibAdwaita successfully initialized');
-    
-    try
-      // Create and run Adwaita application
-      adw_app := TAdwaitaExampleApp.Create;
-      try
-        WriteLn('Starting modern application...');
-        result_code := adw_app.Run;
-        WriteLn('Application finished with code: ', result_code);
-      finally
-        adw_app.Free;
-      end;
-    except
-      on E: Exception do
-      begin
-        WriteLn('ERROR: ', E.Message);
-        Halt(1);
-      end;
-    end;
-  end
-  else
-  begin
-    WriteLn('Mode: Regular GTK4');
-    WriteLn('Run with --adwaita parameter for modern design');
-    WriteLn('');
-    
-    // Initialize PasGTK4
-    if not InitializePasGTK4 then
+      WriteLn('Mode: Compatibility GTK4');
+      if not InitializePasGTK4 then Halt(1);
+      app := TCompatApp.Create;
+      result_code := TCompatApp(app).Run;
+    end
+    else if use_adwaita then
     begin
-      WriteLn('ERROR: Failed to initialize PasGTK4');
-      WriteLn('Make sure GTK4 is installed on your system');
-      Halt(1);
+      WriteLn('Mode: LibAdwaita');
+      if not InitializePasGTK4WithAdwaita then Halt(1);
+      app := TAdwaitaApp.Create;
+      result_code := TAdwaitaApp(app).Run;
+    end
+    else
+    begin
+      WriteLn('Mode: Modern GTK4 HeaderBar');
+      if not InitializePasGTK4 then Halt(1);
+      app := TDemoApp.Create;
+      result_code := TDemoApp(app).Run;
     end;
-    
-    WriteLn('PasGTK4 successfully initialized');
-    
-    try
-      // Create and run regular application
-      app := TExampleApp.Create;
-      try
-        WriteLn('Starting application...');
-        result_code := app.Run;
-        WriteLn('Application finished with code: ', result_code);
-      finally
-        app.Free;
-      end;
-    except
-      on E: Exception do
-      begin
-        WriteLn('ERROR: ', E.Message);
-        Halt(1);
-      end;
+  except
+    on E: Exception do
+    begin
+      WriteLn('ERROR: ', E.ClassName, ': ', E.Message);
+      result_code := 1;
     end;
   end;
-  
-  // Finalize PasGTK4
+
+  if app <> nil then
+    app.Free;
+
   FinalizePasGTK4;
-  WriteLn('PasGTK4 finalized');
+  Halt(result_code);
 end.

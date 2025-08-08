@@ -23,6 +23,12 @@ sudo apt install libgtk-4-dev libadwaita-1-dev
 sudo pacman -S gtk4 libadwaita
 ```
 
+**Or install directly from AUR:**
+```bash
+yay -S pasgtk4-git
+```
+Package: https://aur.archlinux.org/packages/pasgtk4-git
+
 ## Quick Start
 
 ### 1. Clone the repository
@@ -67,15 +73,15 @@ uses
   SysUtils, main, wrapper;
 
 var
-  app: TExampleApp;
+  app: TModernExampleApp;
 
 begin
-  // Initialize PasGTK4 with LibAdwaita
-  if not InitializePasGTK4WithAdwaita then
+  // Initialize PasGTK4
+  if not InitializePasGTK4 then
     Halt(1);
   
-  // Create and run application
-  app := TExampleApp.Create;
+  // Create and run modern application
+  app := TModernExampleApp.Create;
   try
     app.Run;
   finally
@@ -94,6 +100,8 @@ end.
 - **TGTKApplication**: Base application class
 - **TGTKSimpleWindow**: Window with vertical/horizontal layout
 - **TGTKGridWindow**: Window with grid layout
+- **TGTKModernWindow**: Modern GTK4 window with HeaderBar and PopoverMenu (recommended)
+- **TGTKMenuWindow**: Compatibility mode window with traditional menus
 
 ### Core Functions
 
@@ -119,7 +127,27 @@ TPasGTK4.ConnectSignal(PGtkWidget(button), 'clicked', @callback, data);
 
 ## Examples
 
-### Basic Window
+The example application supports three modes:
+
+### 1. Modern GTK4
+```bash
+./example/example_main
+```
+Features modern HeaderBar with PopoverMenu and GAction system.
+
+### 2. LibAdwaita 
+```bash
+./example/example_main --adwaita  
+```
+Native GNOME design with LibAdwaita widgets.
+
+### 3. Compatibility Mode
+```bash
+./example/example_main --compat
+```
+Shows traditional GTK3-style menu compatibility.
+
+### Basic Window Code Example
 ```pascal
 type
   TMyApp = class(TGTKSimpleWindow)
@@ -167,7 +195,7 @@ fpc -dDEBUG -Fu./src example/example_main.pas
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See LICENSE file for details.
+Licensed under the GNU Lesser General Public License v3.0. See LICENSE.md file for details.
 
 ## Author
 
